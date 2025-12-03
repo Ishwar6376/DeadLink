@@ -14,8 +14,11 @@ lerna-debug.log*
 # ----------------------------------------------------
 node_modules/
 
+# Add Env files
 
-.env/
+.env
+.env.local
+.env.*.local
 
 # ----------------------------------------------------
 # Build Output
