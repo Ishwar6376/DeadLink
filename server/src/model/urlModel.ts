@@ -1,4 +1,6 @@
 import { Schema, model } from "mongoose";
+import { User } from "./userModel";
+
 
 const urlSchema = new Schema({
     url_id: {
@@ -15,14 +17,40 @@ const urlSchema = new Schema({
         required: true,
         unique: true,
     },
+    password: {
+        type: String,
+    },
+    expiry: {
+        type: Date,
+        default:null
+    },
     clicks: {
         type: Number,
         default: 0,
+    },
+    isSingleValid: {
+        type: Boolean,
+        default: false
+    },
+    linkCntLimit: {
+        type: Number,
+        default: null
     },
     createdAt: {
         type: Date,
         default: Date.now,
     },
+    isvarified: {
+        type: Boolean,
+        default: false
+    },
+    qr:{
+        type: String
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: User,
+    }
 });
 
 export const Url = model("Url", urlSchema);
