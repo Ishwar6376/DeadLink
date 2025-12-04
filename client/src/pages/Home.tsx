@@ -1,21 +1,24 @@
 import { useState } from "react";
+import axios from "axios";
+
 
 export function Home() {
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [error, setError] = useState("");
 
-  // Simulate shortening URL
-  const handleShorten = () => {
+  
+  const handleShorten = async () => {
     if (!url) {
       setError("Please enter a valid URL");
       setShortUrl("");
       return;
     }
     setError("");
-    // Mock shortened URL
-    const randomCode = Math.random().toString(36).substring(2, 8);
-    setShortUrl(`https://short.ly/${randomCode}`);
+    const response =await axios.post("/api/sort",{url});
+
+
+    setShortUrl(response.data.shortUrl);
   };
 
   return (
@@ -31,7 +34,8 @@ export function Home() {
         />
         <button
           onClick={handleShorten}
-          className="px-6 py-2 rounded-md bg-primary text-white hover:bg-secondary transition-colors duration-200"
+          className="px-6 py-2 rounded-md bg-primary text-white hover:bg-secondary transition-colors duration-200 hover:cursor-pointer"
+
         >
           Shorten
         </button>
