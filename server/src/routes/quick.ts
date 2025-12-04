@@ -1,13 +1,14 @@
-import {Router } from "express"
-import qrGenerator from "../controller/urlController/qrGenerator/qr";
+import { Router } from "express";
+import custom from "../controller/urlController/quick/quick";
+
 const router = Router();
 
 router.post("/", async (req, res) => {
     const url = req.body.url;
-    console.log(url);   
+    const expiry = req.body.expiry;
     try {
-        const qr = await qrGenerator(url);
-        res.status(200).json({ qr });
+        const response = await custom(url, expiry);
+        res.status(200).json({ response });
     } catch (error) {
         res.status(500).json({ error: "Error generating QR code" });
     }

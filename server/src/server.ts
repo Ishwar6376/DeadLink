@@ -4,7 +4,7 @@ import cors from "cors";
 import { connectDB } from "./database/connect";
 import useRoute from './routes/useRoute'
 import qrRoute from './routes/qrRoute'
-
+import quick from './routes/quick'
 
 const app = express();
 app.use(express.json());
@@ -20,6 +20,7 @@ app.use("/api/short", useRoute);
 
 app.use("/api/qr", qrRoute);
 
+app.use("/api/quick",quick );
 
 await connectDB();
 
