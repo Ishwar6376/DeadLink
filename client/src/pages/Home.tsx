@@ -8,6 +8,7 @@ import {
   Clock,
   Eye,
   Shield,
+  ArrowRight,
 } from "lucide-react";
 import axios from "axios";
 
@@ -45,11 +46,11 @@ export default function Home() {
   };
 
   const buttonList = [
-    { key: "qr", label: "QR", icon: QrCode },
-    { key: "quick", label: "Quick", icon: Clock },
+    { key: "qr", label: "QR Code", icon: QrCode },
+    { key: "quick", label: "Quick Expire", icon: Clock },
     { key: "oneTime", label: "One-Time", icon: Eye },
-    { key: "password", label: "Locked", icon: Lock },
-    { key: "custom", label: "Custom", icon: Link2 },
+    { key: "password", label: "Password", icon: Lock },
+    { key: "custom", label: "Custom Slug", icon: Link2 },
   ] as const;
 
   const toggleFeature = (key: keyof Features) =>
@@ -66,18 +67,19 @@ export default function Home() {
       setError("");
       setCopied(false);
 
-      const res = await axios.post("/api/sort", {
+      const res = await axios.post("/api/short", {
         url,
         options: features,
         password: features.password ? password : null,
       });
 
       const short = res.data.shortUrl;
+      console.log(short);
       setShortUrl(short);
-
       if (features.qr) {
         const qrRes = await axios.post("/api/qr", { url: short });
         setQr(qrRes.data.qr);
+        console.log(qrRes);
       } else {
         setQr("");
       }
@@ -95,108 +97,150 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
-      <div className="max-w-4xl mx-auto pt-20 px-4">
-        {/* HERO */}
-        <h1 className="text-5xl sm:text-6xl font-black text-center bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-          Smart Link Shortener
-        </h1>
-        <p className="mt-4 text-center text-slate-400">
-          Expiring links, One-time access, Password protection, QR codes — All
-          in one.
-        </p>
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white ">
+      <div className="max-w-5xl mx-auto px-6 py-16 md:py-24">
+        {/* Hero Section */}
+        <div className="text-center mb-16"></div>
 
-        {/* INPUT */}
-        <div className="w-full px-6 py-4 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-lg shadow-inner"
->
-          <input
-            type="url"
-            value={url}
-            placeholder="Paste long URL here…"
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleShorten()}
-            className="w-full rounded-lg p-4 bg-slate-800 border border-slate-700 focus:ring-2 ring-blue-500 outline-none"
-          />
+        {/* Input Section */}
+        <div className="mb-12">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-linear-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-75"></div>
+            <div className="relative p-8 rounded-2xl bg-linear-to-br from-slate-900/80 to-slate-800/80 backdrop-blur border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300">
+              <div className="mb-6 bg-slate-800 rounded-2xl">
+                <input
+                  type="url"
+                  value={url}
+                  placeholder="Paste your long URL here…"
+                  onChange={(e) => setUrl(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleShorten()}
+                  className="w-full px-5 py-4 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-lg"
+                />
+              </div>
 
-          {/* FEATURE SELECTOR */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
-            {buttonList.map(({ key, label, icon: Icon }) => (
+              {/* Feature Selector */}
+              <div className="mb-6 bg-slate-700 rounded-2xl">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {buttonList.map(({ key, label, icon: Icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => toggleFeature(key)}
+                      className={`group relative p-3 rounded-xl border-2 font-medium transition-all duration-300 flex flex-col items-center justify-center gap-2 text-sm
+  ${
+    features[key]
+      ? `bg-linear-to-br from-red-500 to-orange-500 
+         ${borderColor[key]} 
+         text-white 
+         scale-105
+         shadow-lg shadow-red-500/40`
+      : "bg-slate-800/40 border-slate-700 text-slate-400 hover:border-orange-400 hover:bg-slate-800/70"
+  }
+`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="text-xs font-medium">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Password Input */}
+              {features.password && (
+                <div className="mb-6 bg-slate-700">
+                  <input
+                    type="password"
+                    value={password}
+                    placeholder="Enter protection password"
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-5 py-3 rounded-xl  border border-red-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  />
+                </div>
+              )}
+
+              {/* Action Button */}
               <button
-                key={key}
-                onClick={() => toggleFeature(key)}
-                className={`group relative p-3 rounded-lg border-2 font-medium transition-colors duration-200 flex items-center justify-center gap-2
-                ${
-                  features[key]
-                    ? `bg-slate-900 ${borderColor[key]} text-white shadow-md`
-                    : "bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-700/40"
-                }
-              `}
+                disabled={loading}
+                onClick={handleShorten}
+                className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all duration-300 group
+                  ${
+                    loading
+                      ? "bg-slate-700 cursor-not-allowed"
+                      : "bg-linear-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:shadow-blue-500/30"
+                  }
+                `}
               >
-                <Icon className="w-4 h-4" />
-                {label}
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creating link...
+                  </>
+                ) : (
+                  <>
+                    Shorten URL
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
               </button>
-            ))}
-          </div>
 
-          {/* PASSWORD */}
-          {features.password && (
-            <input
-              type="password"
-              value={password}
-              placeholder="Enter password"
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-4 w-full p-3 rounded-lg bg-slate-800 border border-slate-700"
-            />
-          )}
-
-          {/* BUTTON */}
-          <button
-            disabled={loading}
-            onClick={handleShorten}
-            className={`mt-6 w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2
-              ${
-                loading
-                  ? "bg-slate-700 cursor-not-allowed"
-                  : "bg-linear-to-r from-blue-600 to-purple-600 hover:opacity-90"
-              }
-            `}
-          >
-            {loading ? "Creating..." : "Shorten URL"}
-          </button>
-
-          {/* ERROR */}
-          {error && (
-            <div className="mt-4 bg-red-500/10 text-red-300 p-3 rounded-lg">
-              {error}
+              {/* Error Message */}
+              {error && (
+                <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-300 text-sm font-medium">
+                  {error}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* RESULT */}
+        {/* Results Section */}
         {shortUrl && (
-          <div className="mt-10 grid sm:grid-cols-2 gap-6 animate-fadeIn">
-            <div className="p-5 bg-slate-900 border border-slate-700 rounded-xl">
-              <p className="text-sm text-slate-400 flex items-center gap-2 mb-2">
-                <Shield className="w-4 h-4" /> Short Link
-              </p>
-              <div className="flex gap-2">
-                <code className="flex-1 break-all p-3 bg-slate-800 rounded-lg text-blue-300">
-                  {shortUrl}
-                </code>
-                <button
-                  onClick={handleCopy}
-                  className="p-3 rounded-lg bg-blue-600 hover:bg-blue-700"
-                >
-                  {copied ? <CheckCircle /> : <Copy />}
-                </button>
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Short URL Card */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-linear-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                <div className="relative p-6 rounded-2xl bg-slate-900/60 backdrop-blur border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Shield className="w-4 h-4 text-blue-400" />
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Your Short Link
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <code className="flex-1 px-4 py-3 bg-slate-800/50 rounded-xl text-blue-300 text-sm font-mono break-all border border-slate-700/50">
+                      {shortUrl}
+                    </code>
+                    <button
+                      onClick={handleCopy}
+                      className="px-4 py-3 rounded-xl bg-linear-to-r from-blue-600 to-blue-700 hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center"
+                    >
+                      {copied ? (
+                        <CheckCircle className="w-5 h-5 text-green-300" />
+                      ) : (
+                        <Copy className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {qr && (
-              <div className="p-5 bg-slate-900 border border-slate-700 rounded-xl flex justify-center">
-                <img src={qr} className="w-40" alt="QR Code" />
-              </div>
-            )}
+              {/* QR Code Card */}
+              {qr && (
+                <div className="group relative">
+                  <div className="absolute inset-0 bg-linear-to-r from-purple-500/10 to-pink-500/10 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                  <div className="relative p-6 rounded-2xl bg-slate-900/60 backdrop-blur border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 flex flex-col items-center justify-center min-h-64">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+                      QR Code
+                    </p>
+                    <img
+                      src={qr}
+                      className="w-48 h-48 rounded-lg"
+                      alt="QR Code"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

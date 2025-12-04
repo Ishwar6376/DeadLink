@@ -4,7 +4,7 @@ import  Home  from './pages/Home';
 import { Navbar } from './components/Navbar';
 function App() {
   return (
-    <div className='h-screen w-screen overflow-hidden'>
+    <div className="min-h-screen w-full overflow-y-auto">
       <BrowserRouter>
           <Navbar/>
         <Routes>

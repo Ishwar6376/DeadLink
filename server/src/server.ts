@@ -16,7 +16,7 @@ app.use(
 );
 
 
-app.use("/api/sort", useRoute);
+app.use("/api/short", useRoute);
 
 app.use("/api/qr", qrRoute);
 
