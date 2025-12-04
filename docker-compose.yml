@@ -3,10 +3,27 @@ services:
     build: ./server
     ports:
       - "3000:3000"
+    volumes:
+      - ./server:/src
+      - /src/node_modules
+    command: npm run dev
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
 
   client:
     build: ./client
     ports:
       - "5173:5173"
-    depends_on:
-      - server
+    command: npm run dev -- --host
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    develop:
+      watch:
+        - action: sync
+          path: ./client/src
+          target: /src/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./client/package.json

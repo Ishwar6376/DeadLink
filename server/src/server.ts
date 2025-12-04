@@ -16,6 +16,11 @@ app.use(
 
 app.use("/api/sort", useRoute);
 
+console.log("Connecting to ")
+console.log("hello")
+
+
+
 await connectDB();
 
 console.log("Database connected");
