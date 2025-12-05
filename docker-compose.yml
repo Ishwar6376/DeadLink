@@ -7,11 +7,8 @@ services:
       - ./server:/src
       - /src/node_modules
     command: npm run dev
-    env_file:
-      - ./server/.env
     environment:
       - CHOKIDAR_USEPOLLING=true
-      - MONGODB_URL=${MONGODB_URL}
 
 
   client:
