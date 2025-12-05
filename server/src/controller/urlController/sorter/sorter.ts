@@ -10,15 +10,6 @@ export default async function sorter(req: Request, res: Response) {
       return res.status(400).json({ error: "Original URL is required" });
     }
 
-    const already = await Url.findOne({ url });
-
-    if (already) {
-      return res.status(200).json({
-        shortUrl: already.shortUrl,
-        id: already.url_id
-      });
-    }
-
     let id = nanoid(8);
     let existing = await Url.findOne({ url_id: id });
 
@@ -27,7 +18,7 @@ export default async function sorter(req: Request, res: Response) {
       existing = await Url.findOne({ url_id: id });
     }
 
-    const shortUrl = `http://deadlink/${id}`;
+    const shortUrl = `http://short.ly/${id}`;
 
     const newUrl = new Url({
       url_id: id,
