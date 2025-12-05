@@ -2,10 +2,11 @@ import express from "express";
 import passRoute  from "./routes/passRoute";
 import cors from "cors";
 import { connectDB } from "./database/connect";
-import useRoute from './routes/useRoute'
+import useRoute from './routes/short'
 import qrRoute from './routes/qrRoute'
 import quick from './routes/quick'
 import oneTime from './routes/oneTime'
+import redirect from './routes/redirect'
 const app = express();
 app.use(express.json());
 app.use(
@@ -25,6 +26,7 @@ app.use("/api/pass", passRoute);
 
 app.use("/api/oneTime", oneTime);
 
+app.use("/api/redirect",redirect)
 
 await connectDB();
 

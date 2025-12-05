@@ -18,7 +18,7 @@ export default async function sorter(req: Request, res: Response) {
       existing = await Url.findOne({ url_id: id });
     }
 
-    const shortUrl = `http://short.ly/${id}`;
+    const shortUrl = `http://localhost:5173/${id}`;
 
     const newUrl = new Url({
       url_id: id,
