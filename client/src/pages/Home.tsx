@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import axios from "axios";
+
 import {
   Copy,
   CheckCircle,
@@ -15,7 +17,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-import { useEffect } from "react";
 interface Features {
   qr: boolean;
   quick: boolean;
@@ -33,6 +34,7 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
   const [day, setDay] = useState(1);
+  const [shortButton, setShortButton] = useState("Short");
 
   const [features, setFeatures] = useState<Features>({
     qr: false,
@@ -41,6 +43,10 @@ export default function Home() {
     password: false,
     custom: false,
   });
+
+
+
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (!features.quick || document.activeElement?.tagName === "INPUT")
@@ -125,31 +131,12 @@ export default function Home() {
 
     try {
       const response = await axios.post("/api/short", { url });
-      const  shortUrl  = response.data.shortUrl;
+      const shortUrl = response.data.shortUrl;
       setShortUrl(shortUrl);
+      console.log("Short URL:", shortUrl);
     } catch (error) {
       console.error(error);
       setError("An error occurred while shortening the URL");
-    }
-    if(features.qr){
-      try {
-        const response = await axios.post("/api/qr", {url:url});
-        console.log(response);
-        const  qr  = response.data.qr;
-        console.log(response);
-        setQr(qr);
-      } catch (error) {
-        console.error(error);
-        setError("An error occurred while shortening the URL");
-      }
-    }
-    if(features.quick){
-      try {
-        await axios.post("/api/quick", { url:shortUrl, expiry: new Date(new Date().getTime() + day * 24 * 60 * 60 * 1000) });
-      } catch (error) {
-        console.error(error);
-        setError("An error occurred while shortening the URL");
-      }
     }
     setLoading(true);
     setError("");
@@ -157,11 +144,90 @@ export default function Home() {
     setLoading(false);
   };
 
+  useEffect(() => {
+    if (!shortUrl) return;
+
+    let cancelled = false;
+
+    async function runFeatures() {
+      console.log("User logged in:", isLoggedIn);
+
+      if (features.qr) {
+        {
+          try {
+            const response = await axios.post("/api/qr", { url: shortUrl });
+            if (!cancelled) setQr(response.data.qr);
+          } catch (err) {
+            if (!cancelled) {
+              console.error(err);
+              setError("Error generating QR");
+            }
+          }
+        }
+      }
+
+      if (features.quick) {
+        if (!isLoggedIn) {
+          setError("Login required for Quick Expire");
+        } else {
+          try {
+            const expiryDate = new Date(Date.now() + day * 86400000);
+            await axios.post("/api/quick", {
+              url: shortUrl,
+              expiry: expiryDate,
+            });
+          } catch (err) {
+            if (!cancelled) {
+              console.error(err);
+              setError("Error setting Quick Expire");
+            }
+          }
+        }
+      }
+
+      if (features.password) {
+        if (!isLoggedIn) {
+          setError("Login required for Password Protection");
+        } else {
+          try {
+            await axios.post("/api/pass", { url: shortUrl, pass: password });
+          } catch (err) {
+            if (!cancelled) {
+              console.error(err);
+              setError("Error setting password");
+            }
+          }
+        }
+      }
+      if(features.oneTime){
+        if (!isLoggedIn) {
+          setError("Login required for One Time");
+        } else {
+          try {
+            await axios.post("/api/oneTime", { url: shortUrl });
+          } catch (err) {
+            if (!cancelled) {
+              console.error(err);
+              setError("Error setting One Time");
+            }
+          }
+        }
+      }
+    }
+
+    runFeatures();
+    return () => {
+      cancelled = true;
+    };
+  }, [shortUrl]);
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText(shortUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const loginRequired = (features.quick || features.password || features.oneTime) && !isLoggedIn;
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
@@ -197,7 +263,6 @@ export default function Home() {
                 />
               </div>
 
-              {/* Feature Selector */}
               <div>
                 <p className="text-xs font-semibold text-slate-400 mb-4 uppercase tracking-wider">
                   Select Features
@@ -255,8 +320,14 @@ export default function Home() {
                   />
                 </div>
               )}
-
-              {features.quick && (
+              {features.quick && !isLoggedIn && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 mb-4 uppercase tracking-wider">
+                    login required
+                  </p>
+                </div>
+              )}
+              {features.quick && isLoggedIn && (
                 <div className="relative group mb-6">
                   <div className="absolute inset-0 bg-linear-to-r from-amber-500/20 to-orange-500/20 rounded-3xl blur-xl opacity-50"></div>
 
@@ -320,9 +391,8 @@ export default function Home() {
                                   setDay(Number(val));
                                 }}
                                 onBlur={() => {
-                                  // Final validation when user leaves field
                                   if (day < 1) setDay(1);
-                                  if (day > 365) setDay(365); // allow larger if you want
+                                  if (day > 365) setDay(365); 
                                 }}
                                 placeholder="Days"
                                 className="w-32 text-center text-6xl font-black text-amber-400 bg-transparent outline-none"
@@ -347,7 +417,6 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Summary */}
                     <p className="text-xs text-slate-400">
                       Expires after{" "}
                       <span className="text-amber-400 font-bold">{day}</span>{" "}
@@ -359,24 +428,29 @@ export default function Home() {
 
               {/* Action Button */}
               <button
-                disabled={loading}
+                disabled={loading || loginRequired}
                 onClick={handleShorten}
                 className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all duration-300 group
                   ${
-                    loading
-                      ? "bg-slate-700 cursor-not-allowed"
-                      : "bg-linear-to-r from-blue-600 to-purple-600 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105"
+                    loading || loginRequired
+                      ? "bg-slate-700 cursor-not-allowed opacity-50"
+                      : "bg-linear-to-r from-blue-600 to-purple-600 hover:shadow-xl  hover:scale-102 hover-cursor-pointer"
                   }
                 `}
-              >
+                > 
                 {loading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     Creating link...
                   </>
+                ) : loginRequired ? (
+                  <>
+                    Login Required
+                    <Lock className="w-5 h-5" />
+                  </>
                 ) : (
                   <>
-                    Shorten URL
+                    {shortButton}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -441,7 +515,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="p-4 bg-white rounded-xl">
-                      <img src={qr}  alt="QR Code" />
+                      <img src={qr} alt="QR Code" />
                     </div>
                   </div>
                 </div>

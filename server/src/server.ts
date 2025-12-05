@@ -1,11 +1,11 @@
 import express from "express";
-import dotenv from "dotenv";
+import passRoute  from "./routes/passRoute";
 import cors from "cors";
 import { connectDB } from "./database/connect";
 import useRoute from './routes/useRoute'
 import qrRoute from './routes/qrRoute'
 import quick from './routes/quick'
-
+import oneTime from './routes/oneTime'
 const app = express();
 app.use(express.json());
 app.use(
@@ -15,14 +15,19 @@ app.use(
   })
 );
 
-
 app.use("/api/short", useRoute);
 
 app.use("/api/qr", qrRoute);
 
 app.use("/api/quick",quick );
 
+app.use("/api/pass", passRoute);
+
+app.use("/api/oneTime", oneTime);
+
+
 await connectDB();
+
 
 console.log("Database connected");
 

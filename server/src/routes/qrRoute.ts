@@ -3,8 +3,7 @@ import qrGenerator from "../controller/urlController/qrGenerator/qr";
 const router = Router();
 
 router.post("/", async (req, res) => {
-    const url = req.body.url;
-    console.log(url);   
+    const url = req.body.url; 
     try {
         const qr = await qrGenerator(url);
         res.status(200).json({ qr });
