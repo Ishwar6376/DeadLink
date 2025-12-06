@@ -34,7 +34,7 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
   const [day, setDay] = useState(1);
-  const [shortButton, setShortButton] = useState("Short");
+  const shortButton = "Short";
 
   const [features, setFeatures] = useState<Features>({
     qr: false,
@@ -46,7 +46,7 @@ export default function Home() {
 
 
 
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, _setIsLoggedIn] = useState(true);
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (!features.quick || document.activeElement?.tagName === "INPUT")
