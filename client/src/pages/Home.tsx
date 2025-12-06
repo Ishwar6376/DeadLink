@@ -34,7 +34,7 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
   const [day, setDay] = useState(1);
-  const [shortButton, setShortButton] = useState("Short");
+  const shortButton = "Short";
 
   const [features, setFeatures] = useState<Features>({
     qr: false,
