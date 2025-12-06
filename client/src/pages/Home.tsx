@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
+import { useUser } from "@clerk/clerk-react";
 
 import {
   Copy,
@@ -36,6 +37,11 @@ export default function Home() {
   const [day, setDay] = useState(1);
   const shortButton = "Short";
 
+  const [loginBtn, setLoginBtn] = useState("Login");
+  const { user, isSignedIn } = useUser();
+  console.log(user);
+  const isLoggedIn = isSignedIn;
+
   const [features, setFeatures] = useState<Features>({
     qr: false,
     quick: false,
@@ -44,9 +50,6 @@ export default function Home() {
     custom: false,
   });
 
-
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (!features.quick || document.activeElement?.tagName === "INPUT")
@@ -83,7 +86,6 @@ export default function Home() {
           break;
       }
     };
-
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [features.quick]);
@@ -199,7 +201,7 @@ export default function Home() {
           }
         }
       }
-      if(features.oneTime){
+      if (features.oneTime) {
         if (!isLoggedIn) {
           setError("Login required for One Time");
         } else {
@@ -227,7 +229,11 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const loginRequired = (features.quick || features.password || features.oneTime) && !isLoggedIn;
+  const handleLogin = () => {
+    window.location.href = "/login";
+  };
+  const loginRequired =
+    (features.quick || features.password || features.oneTime) && !isLoggedIn;
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
@@ -392,7 +398,7 @@ export default function Home() {
                                 }}
                                 onBlur={() => {
                                   if (day < 1) setDay(1);
-                                  if (day > 365) setDay(365); 
+                                  if (day > 365) setDay(365);
                                 }}
                                 placeholder="Days"
                                 className="w-32 text-center text-6xl font-black text-amber-400 bg-transparent outline-none"
@@ -428,16 +434,18 @@ export default function Home() {
 
               {/* Action Button */}
               <button
-                disabled={loading || loginRequired}
-                onClick={handleShorten}
+                onClick={loginRequired ? handleLogin : handleShorten}
+                disabled={loading}
                 className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all duration-300 group
-                  ${
-                    loading || loginRequired
-                      ? "bg-slate-700 cursor-not-allowed opacity-50"
-                      : "bg-linear-to-r from-blue-600 to-purple-600 hover:shadow-xl  hover:scale-102 hover-cursor-pointer"
-                  }
-                `}
-                > 
+                ${
+                  loading
+                    ? "bg-slate-700 cursor-not-allowed"
+                    : loginRequired
+                    ? "bg-red-700 hover:bg-red-600"
+                    : "bg-linear-to-r from-blue-600 to-purple-600 hover:shadow-xl hover:scale-105"
+                }
+              `}
+              >
                 {loading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -445,12 +453,12 @@ export default function Home() {
                   </>
                 ) : loginRequired ? (
                   <>
-                    Login Required
+                    Login to continue
                     <Lock className="w-5 h-5" />
                   </>
                 ) : (
                   <>
-                    {shortButton}
+                    Short
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}

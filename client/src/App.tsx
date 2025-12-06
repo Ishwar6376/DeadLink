@@ -3,7 +3,7 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import  Home  from './pages/Home';
 import { Navbar } from './components/Navbar';
 import RedirectPage from "./pages/Redirect"
-
+import Auth from './pages/login';
 
 function App() {
   return (
@@ -13,6 +13,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
            <Route path=":id" element={<RedirectPage />} />
+          <Route path="/login" element={<Auth />} />
         </Routes>
       </BrowserRouter>
     </div>
