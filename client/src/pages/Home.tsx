@@ -46,7 +46,7 @@ export default function Home() {
 
 
 
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (!features.quick || document.activeElement?.tagName === "INPUT")
@@ -233,7 +233,7 @@ export default function Home() {
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
       <div className="max-w-5xl mx-auto px-6 py-16 md:py-24">
         {/* Hero Section */}
-        <div className="text-center mb-16">
+        {/* <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4">
             <span className="bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               Smart Links
@@ -244,7 +244,7 @@ export default function Home() {
           <p className="text-lg text-slate-400">
             Create powerful short links with advanced features
           </p>
-        </div>
+        </div> */}
 
         {/* Input Section */}
         <div className="mb-12">

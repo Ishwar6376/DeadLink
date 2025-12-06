@@ -11,10 +11,10 @@ export default function RedirectPage() {
   useEffect(() => {
     async function fetchRedirect() {
       try {
+        console.log("iddd",id);
         const res = await axios.post("/api/redirect", { id });
-
+        console.log(res)
         let redirectUrl = res.data.url;
-        // window.location.assign(url)
         if (
           !redirectUrl.startsWith("http://") &&
           !redirectUrl.startsWith("https://")
@@ -48,8 +48,7 @@ export default function RedirectPage() {
             <p className="text-slate-400 text-sm">Performing quick security check…</p>
           </div>
         )}
-
-        {/* URL Display / Button */}
+        
         {!loading && !error && (
           <div className="mt-4">
             <p className="text-slate-400 mb-2 text-sm">

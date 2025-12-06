@@ -12,7 +12,7 @@ function App() {
           <Navbar/>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/:id" element={<RedirectPage />} />
+           <Route path=":id" element={<RedirectPage />} />
         </Routes>
       </BrowserRouter>
     </div>
