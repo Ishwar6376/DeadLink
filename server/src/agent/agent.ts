@@ -2,6 +2,7 @@
 import axios from "axios";
 import { JSDOM } from "jsdom";
 import OpenAI from "openai";
+import { Url } from "../model/urlModel";
 
 const OPENAI_MODEL = "gpt-4.1-mini";
 
@@ -100,8 +101,12 @@ function computeHeuristicRisk(url: string, html: string) {
 }
 
 export const analyzeWebsite = async (req: any, res: any) => {
-  const { url } = req.body;
-
+  const {id}=req.body;
+  const response= await Url.findOne({url_id:id});
+  if(!response){
+    return res.status(400).json({ error: "Not A Valid Link" });
+  }
+  const url=response?.url;
   if (!url) return res.status(400).json({ error: "URL is required" });
 
   console.log(`Analyzing: ${url}`);

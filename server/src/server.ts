@@ -7,7 +7,6 @@ import useRoute from "./routes/short";
 import qrRoute from "./routes/qrRoute";
 import quick from "./routes/quick";
 import oneTime from "./routes/oneTime";
-import agent from "./routes/agent";
 import redirect from "./routes/redirect"
 import verification from "./routes/verification"
 
@@ -40,9 +39,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/short", useRoute);
 app.use("/api/qr", qrRoute);
-// app.use("/api/verify", verification)
 app.use("/api/redirect", redirect)
-app.use("/api/agent", agent);
 
 
 app.use("/api/quick", quick);

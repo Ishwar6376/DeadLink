@@ -1,5 +1,6 @@
 import { Url } from "../model/urlModel";
 import Router from "express";
+import {analyzeWebsite} from "../agent/agent"
 
 const router=Router();
 router.post("/", async (req, res) => {
@@ -28,16 +29,14 @@ router.post("/", async (req, res) => {
     if (doc.password && password !== doc.password) {
       return res.status(403).json({ status: "wrong_password" });
     }
-
-    // UPDATE CLICK COUNT
     doc.clicks += 1;
     await doc.save();
-
-    // NORMALIZE URL
     const normalizedUrl = /^https?:\/\//i.test(doc.url)
       ? doc.url
       : `https://${doc.url}`;
 
+    // const response=analyzeWebsite(req,res);
+    // console.log(response);
     return res.status(200).json({
       status: "safe",
       url: normalizedUrl,
