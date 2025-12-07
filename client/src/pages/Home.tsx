@@ -16,7 +16,9 @@ import {
   Check,
   ChevronUp,
   ChevronDown,
+  
 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 
 interface Features {
   qr: boolean;
@@ -35,7 +37,7 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
   const [day, setDay] = useState(1);
-  const [shortButton,setShortButton]=useState("Short");
+  const [shortButton, setShortButton] = useState("Short");
   const { user, isSignedIn } = useUser();
   console.log(user);
   const isLoggedIn = isSignedIn;
@@ -128,7 +130,7 @@ export default function Home() {
       setError("Please enter a valid URL");
       return;
     }
-    setShortButton("Shorting")
+    setShortButton("Shorting");
     try {
       const response = await axios.post("/api/short", { url });
       const shortUrl = response.data.shortUrl;
@@ -138,7 +140,7 @@ export default function Home() {
       console.error(error);
       setError("An error occurred while shortening the URL");
     }
-    setShortButton("Shorted")
+    setShortButton("Shorted");
     setLoading(true);
     setError("");
     setCopied(false);
@@ -510,18 +512,58 @@ export default function Home() {
               {qr && (
                 <div className="group relative">
                   <div className="absolute inset-0 bg-linear-to-r from-purple-500/20 to-pink-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-75"></div>
+
                   <div className="relative p-6 rounded-2xl bg-linear-to-br from-slate-900/80 to-slate-800/80 backdrop-blur border border-slate-700/50 hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center min-h-80">
                     <div className="flex items-center gap-2 mb-6">
                       <div className="p-2 rounded-lg bg-purple-500/20">
-                        <QrCode className=" text-purple-400" />
+                        <QrCode className="text-purple-400" />
                       </div>
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                         QR Code
                       </p>
                     </div>
-                    <div className="p-4 bg-white rounded-xl">
-                      <img src={qr} alt="QR Code" />
+                    <div className="p-4 bg-white rounded-xl shadow-lg">
+                      <img
+                        src={qr}
+                        alt="QR Code"
+                        className="w-48 h-48 object-contain"
+                      />
                     </div>
+
+                    {/* Buttons */}
+                    <div className="flex gap-3 mt-6">
+                      <button
+                        onClick={() => shareQR(qr)}
+                        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white font-semibold"
+                      >
+                        Share QR
+                      </button>
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(
+                          "Scan this QR:"
+                        )}`}
+                        className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 transition text-white font-semibold"
+                        target="_blank"
+                      >
+                        <FaWhatsapp className="w-full h-full"/>
+                      </a>
+
+                      <a
+                        href={qr}
+                        download="qr.png"
+                        className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 transition text-white font-semibold"
+                      >
+                        Download
+                      </a>
+                    </div>
+
+                    {/* Desktop fallback */}
+                    {!navigator.canShare && (
+                      <p className="text-xs text-slate-500 mt-2">
+                        Sharing isn’t supported on this device. Download
+                        instead.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -531,4 +573,25 @@ export default function Home() {
       </div>
     </div>
   );
+}
+
+async function shareQR(qrDataUrl: string) {
+  try {
+    if (!navigator.canShare) {
+      alert("Sharing is not supported on this device.");
+      return;
+    }
+
+    const res = await fetch(qrDataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], "qr.png", { type: blob.type });
+
+    await navigator.share({
+      title: "Scan this QR",
+      text: "Here is the QR code!",
+      files: [file],
+    });
+  } catch (e) {
+    console.error("Share failed:", e);
+  }
 }
