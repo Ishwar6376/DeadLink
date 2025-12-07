@@ -4,29 +4,27 @@ import Router from "express";
 const router=Router();
 router.post("/", async (req, res) => {
   try {
+    console.log("Backed hit")
     const { id, password } = req.body;
+    console.log(password,id)
 
     const doc = await Url.findOne({ url_id: id });
     if (!doc) {
       return res.status(404).json({ status: "not_found", message: "Invalid link" });
     }
 
-    // EXPIRED LINK
     if (doc.expiry && Date.now() > doc.expiry.getTime()) {
       return res.status(410).json({ status: "expired", message: "This link has expired." });
     }
 
-    // ONE-TIME LINK ALREADY USED
     if (doc.isSingleValid && doc.clicks > 0) {
       return res.status(409).json({ status: "used", message: "This one-time link has already been used." });
     }
 
-    // PASSWORD PROTECTED (NO PASSWORD PROVIDED)
     if (doc.password && !password) {
-      return res.status(401).json({ status: "password_required" });
+      return res.status(405).json({ status: "password_required",message:"Password is needed" });
     }
 
-    // WRONG PASSWORD
     if (doc.password && password !== doc.password) {
       return res.status(403).json({ status: "wrong_password" });
     }

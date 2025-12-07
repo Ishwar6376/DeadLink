@@ -21,29 +21,28 @@ export default function RedirectPage() {
     return "https://" + u;
   }
 
-  async function fetchRedirect(pass?: string) {
-    try {
-      const res = await axios.post("/api/redirect", { id:id, password: pass });
+async function fetchRedirect(pass?: string) {
+  try {
+    const res = await axios.post("/api/redirect", { id, password: pass });
 
-      setStatus(res.data.status);
-      setUrl(normalizeUrl(res.data.url)); 
-      setSafety(res.data.safety || null);
-      setLoading(false);
+    setStatus(res.data.status);
+    setUrl(normalizeUrl(res.data.url));
+    setSafety(res.data.safety || null);
+    setLoading(false);
 
-    } catch (err: any) {
-      setLoading(false);
-      setError(err.response?.data?.message || "Something went wrong");
-    }
+  } catch (err: any) {
+    const data = err.response?.data;
+    setStatus(data?.status);   
+    setError(data?.message);  
+    setLoading(false);
   }
-
+}
   useEffect(() => {
+    console.log("Status",status)
     fetchRedirect();
   }, [id]);
 
-  // LOADING UI
   if (loading) return <LoaderUI />;
-
-  // STATUS HANDLING
   if (status === "expired") return <ErrorUI msg="This link has expired." />;
   if (status === "used") return <ErrorUI msg="This link has already been used." />;
 
@@ -88,6 +87,8 @@ function PasswordUI({
   fetchRedirect: any;
   status: string;
 }) {
+  const [showPass, setShowPass] = useState(false);
+
   return (
     <div className="h-screen flex items-center justify-center text-white bg-slate-900">
       <div className="bg-slate-800/60 p-8 rounded-xl max-w-sm w-full border border-slate-700">
@@ -99,24 +100,34 @@ function PasswordUI({
           <p className="text-red-400 text-sm mb-3">Incorrect password</p>
         )}
 
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter password..."
-          className="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg mb-4"
-        />
+        <div className="relative">
+          <input
+            className="w-full p-3 bg-slate-600 border border-slate-700 rounded-lg mb-4 pr-12"
+            type={showPass ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password..."
+          />
+          <button
+            onClick={() => setShowPass(!showPass)}
+            className="absolute right-3 top-3 text-slate-300 hover:text-white bg-amber-600 hover:cursor-pointer"
+            type="button"
+          >
+            {showPass ? "Hide" : "Show"}
+          </button>
+        </div>
 
         <button
           onClick={() => fetchRedirect(password)}
-          className="w-full p-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition"
+          className="w-full p-3 rounded-lg bg-purple-600 hover:bg-purple-700 hover:cursor-pointer"
         >
-          Unlock Link →
+          Unlock Link 
         </button>
       </div>
     </div>
   );
 }
+
 
 function WarningUI({ url, safety }: { url: string; safety: any }) {
   return (

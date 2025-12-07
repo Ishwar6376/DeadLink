@@ -35,9 +35,7 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
   const [day, setDay] = useState(1);
-  const shortButton = "Short";
-
-  const [loginBtn, setLoginBtn] = useState("Login");
+  const [shortButton,setShortButton]=useState("Short");
   const { user, isSignedIn } = useUser();
   console.log(user);
   const isLoggedIn = isSignedIn;
@@ -130,7 +128,7 @@ export default function Home() {
       setError("Please enter a valid URL");
       return;
     }
-
+    setShortButton("Shorting")
     try {
       const response = await axios.post("/api/short", { url });
       const shortUrl = response.data.shortUrl;
@@ -140,6 +138,7 @@ export default function Home() {
       console.error(error);
       setError("An error occurred while shortening the URL");
     }
+    setShortButton("Shorted")
     setLoading(true);
     setError("");
     setCopied(false);
@@ -238,7 +237,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
       <div className="max-w-5xl mx-auto px-6 py-16 md:py-24">
-        {/* Hero Section */}
         {/* <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4">
             <span className="bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -313,7 +311,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Password Input */}
               {features.password && (
                 <div className="relative group">
                   <div className="absolute inset-0 bg-linear-to-r from-violet-500/20 to-purple-500/20 rounded-xl blur-lg opacity-50"></div>
@@ -458,7 +455,7 @@ export default function Home() {
                   </>
                 ) : (
                   <>
-                    Short
+                    {shortButton}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}

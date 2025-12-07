@@ -88,15 +88,14 @@ button, input, select, textarea {
   z-index: 50;
 }
 a {
-  color: inherit;       /* inherit current text color */
-  text-decoration: none; /* remove underline */
+  color: inherit;       
+  text-decoration: none; 
 }
 
 a:hover {
   color: var(--color-primary); 
 }
 
-/* ===== ORANGE GLOW SCROLLBAR ===== */
 ::-webkit-scrollbar {
   width: 12px;
 }
@@ -121,7 +120,6 @@ a:hover {
   animation: glow-move 3s linear infinite;
 }
 
-/* Hover glow */
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
@@ -135,7 +133,6 @@ a:hover {
     0 0 35px rgba(255, 69, 0, 0.9);
 }
 
-/* Ray moving effect */
 @keyframes glow-move {
   0% {
     background-position: 0% 0%;
