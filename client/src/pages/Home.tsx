@@ -29,6 +29,7 @@ interface Features {
 }
 
 export default function Home() {
+  const [slug, setSlug] = useState("");
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [qr, setQr] = useState("");
@@ -137,9 +138,13 @@ export default function Home() {
       const shortUrl = response.data.shortUrl;
       setShortUrl(shortUrl);
       console.log("Short URL:", shortUrl);
-    } catch (error) {
-      console.error(error);
-      setError("An error occurred while shortening the URL");
+    } catch (err: any) {
+      console.error(err);
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("An error occurred while shortening the URL");
+      }
     }
     setShortButton("Shorted");
     setLoading(true);
@@ -202,6 +207,7 @@ export default function Home() {
           }
         }
       }
+      if (features.oneTime) {
       if (features.oneTime) {
         if (!isLoggedIn) {
           setError("Login required for One Time");
@@ -279,11 +285,10 @@ export default function Home() {
                       key={key}
                       onClick={() => toggleFeature(key)}
                       className={`group relative overflow-hidden rounded-xl transition-all duration-300 p-4 flex flex-col items-center justify-center gap-2
-                      ${
-                        features[key]
+                      ${features[key]
                           ? `bg-linear-to-br ${linearColor[key]} border-2 ${borderColor[key]} text-white shadow-lg ${shadowColor[key]} scale-105`
                           : "bg-slate-800/40 border-2 border-slate-700 text-slate-400 hover:border-slate-600 hover:bg-slate-800/60"
-                      }
+                        }
                     `}
                     >
                       {features[key] && (
@@ -292,19 +297,17 @@ export default function Home() {
                         </div>
                       )}
                       <div
-                        className={`p-2 rounded-lg transition-all ${
-                          features[key]
-                            ? "bg-white/20"
-                            : "bg-slate-700/30 group-hover:bg-slate-700/50"
-                        }`}
+                        className={`p-2 rounded-lg transition-all ${features[key]
+                          ? "bg-white/20"
+                          : "bg-slate-700/30 group-hover:bg-slate-700/50"
+                          }`}
                       >
                         <Icon className="w-5 h-5" />
                       </div>
                       <span className="font-semibold text-sm">{label}</span>
                       <span
-                        className={`text-xs ${
-                          features[key] ? "text-white/80" : "text-slate-500"
-                        }`}
+                        className={`text-xs ${features[key] ? "text-white/80" : "text-slate-500"
+                          }`}
                       >
                         {desc}
                       </span>
@@ -322,6 +325,18 @@ export default function Home() {
                     placeholder="Enter protection password"
                     onChange={(e) => setPassword(e.target.value)}
                     className="relative w-full px-6 py-3 rounded-xl bg-slate-800/50 border border-violet-500/30 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
+                  />
+                </div>
+              )}
+              {features.custom && (    // handling custom slug
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-linear-to-r from-pink-500/20 to-rose-500/20 rounded-xl blur-lg opacity-50"></div>
+                  <input
+                    type="text"
+                    value={slug}
+                    placeholder="Enter custom slug (e.g. my-link)"
+                    onChange={(e) => setSlug(e.target.value)}
+                    className="relative w-full px-6 py-3 rounded-xl bg-slate-800/50 border border-pink-500/30 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
                   />
                 </div>
               )}
@@ -348,10 +363,9 @@ export default function Home() {
                           key={d}
                           onClick={() => setDay(d)}
                           className={`py-3 rounded-lg font-semibold transition-all duration-200
-                            ${
-                              day === d
-                                ? "bg-linear-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/40 scale-105"
-                                : "bg-slate-800/50 text-slate-400 hover:bg-slate-700 border border-slate-700"
+                            ${day === d
+                              ? "bg-linear-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/40 scale-105"
+                              : "bg-slate-800/50 text-slate-400 hover:bg-slate-700 border border-slate-700"
                             }
                           `}
                         >
@@ -397,6 +411,7 @@ export default function Home() {
                                 }}
                                 onBlur={() => {
                                   if (day < 1) setDay(1);
+                                  if (day > 365) setDay(365);
                                   if (day > 365) setDay(365);
                                 }}
                                 placeholder="Days"
