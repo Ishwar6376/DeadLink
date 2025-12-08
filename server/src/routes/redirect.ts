@@ -1,6 +1,5 @@
 import { Url } from "../model/urlModel";
 import Router from "express";
-import {analyzeWebsite} from "../agent/agent"
 
 const router=Router();
 router.post("/", async (req, res) => {

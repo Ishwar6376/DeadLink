@@ -133,7 +133,8 @@ export default function Home() {
     }
     setShortButton("Shorting");
     try {
-      const response = await axios.post("/api/short", { url });
+      const endpoint = features.custom ? "/api/slug" : "/api/short";
+      const response = await axios.post(endpoint, { url });
       
       const shortUrl = response.data.shortUrl;
       setShortUrl(shortUrl);
@@ -156,7 +157,6 @@ export default function Home() {
   useEffect(() => {
     if (!shortUrl) return;
     let cancelled = false;
-
     async function runFeatures() {
       // console.log("User logged in:", isLoggedIn);
 
@@ -223,12 +223,12 @@ export default function Home() {
         }
       }
     }
-
+  }
     runFeatures();
     return () => {
       cancelled = true;
     };
-  }, [shortUrl]);
+    }, [shortUrl]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(shortUrl);
