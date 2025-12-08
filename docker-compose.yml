@@ -8,7 +8,7 @@ services:
       - ./server:/src
       - /src/node_modules
     env_file:
-      - ./server/.env       # load CLERK_* and PORT from here
+      - ./server/.env      
     command: npm run dev
     environment:
       - CHOKIDAR_USEPOLLING=true
@@ -19,7 +19,7 @@ services:
     ports:
       - "5173:5173"
     env_file:
-      - ./client/.env       # load VITE_* from here
+      - ./client/.env       
     command: npm run dev -- --host
     environment:
       - CHOKIDAR_USEPOLLING=true

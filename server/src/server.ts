@@ -8,7 +8,10 @@ import qrRoute from "./routes/qrRoute";
 import quick from "./routes/quick";
 import oneTime from "./routes/oneTime";
 import redirect from "./routes/redirect"
-import verification from "./routes/verification"
+import test from "./test/test"
+import saveUser from "./routes/saveUser"
+
+import dashboard from "./routes/dashboard/dashboard"
 
 import {
   clerkMiddleware,
@@ -40,6 +43,7 @@ app.get("/", (req, res) => {
 app.use("/api/short", useRoute);
 app.use("/api/qr", qrRoute);
 app.use("/api/redirect", redirect)
+app.use("/api/saveUser", saveUser)
 
 
 app.use("/api/quick", quick);
@@ -47,15 +51,10 @@ app.use("/api/pass", passRoute);
 app.use("/api/oneTime", oneTime);
 
 
-app.get("/api/me",requireAuth(), (req, res) => {
-  const auth = getAuth(req);
-  console.log(auth);
-  res.json({
-    message: "You are authenticated ",
-    userId: auth.userId,
-    sessionId: auth.sessionId,
-  });
-});
+app.use("/api/test",test)
+
+
+app.use("/api/me",dashboard);
 
 
 async function connectDB() {

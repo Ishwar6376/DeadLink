@@ -38,8 +38,8 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [day, setDay] = useState(1);
   const [shortButton, setShortButton] = useState("Short");
-  const { user, isSignedIn } = useUser();
-  console.log(user);
+  const {  isSignedIn } = useUser();
+
   const isLoggedIn = isSignedIn;
 
   const [features, setFeatures] = useState<Features>({
@@ -133,6 +133,7 @@ export default function Home() {
     setShortButton("Shorting");
     try {
       const response = await axios.post("/api/short", { url });
+      
       const shortUrl = response.data.shortUrl;
       setShortUrl(shortUrl);
       console.log("Short URL:", shortUrl);
@@ -149,11 +150,10 @@ export default function Home() {
 
   useEffect(() => {
     if (!shortUrl) return;
-
     let cancelled = false;
 
     async function runFeatures() {
-      console.log("User logged in:", isLoggedIn);
+      // console.log("User logged in:", isLoggedIn);
 
       if (features.qr) {
         {

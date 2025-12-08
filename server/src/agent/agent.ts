@@ -106,6 +106,7 @@ export const analyzeWebsite = async (req: any, res: any) => {
   if(!response){
     return res.status(400).json({ error: "Not A Valid Link" });
   }
+  
   const url=response?.url;
   if (!url) return res.status(400).json({ error: "URL is required" });
 

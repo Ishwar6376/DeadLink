@@ -42,17 +42,12 @@ export function Navbar() {
           {/* Clerk Auth Buttons */}
           <div className="flex items-center gap-3">
             <SignedOut>
-              <SignInButton mode="modal">
-                <button className="px-4 py-2 text-sm bg-blue-600 rounded-lg hover:bg-blue-700 transition">
-                  Sign In
-                </button>
-              </SignInButton>
-
-              <SignUpButton mode="modal">
-                <button className="px-4 py-2 text-sm bg-purple-600 rounded-lg hover:bg-purple-700 transition">
-                  Sign Up
-                </button>
-              </SignUpButton>
+              <button className="px-4 py-3 rounded-lg bg-blue-600 text-sm font-medium hover:bg-blue-700 transition"
+                onClick={() =>{
+                  window.location.href = "/login";
+                }}>
+                login
+              </button>
             </SignedOut>
 
             <SignedIn>
