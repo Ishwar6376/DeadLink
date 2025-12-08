@@ -7,6 +7,8 @@ import qrRoute from './routes/qrRoute'
 import quick from './routes/quick'
 import oneTime from './routes/oneTime'
 import slugRoute from "./routes/slugRoute";
+import redirectRoute from "./routes/redirectRoute";
+
 
 const app = express();
 app.use(express.json());
@@ -27,6 +29,8 @@ app.use("/api/pass", passRoute);
 
 app.use("/api/oneTime", oneTime);
 app.use("/api/slug", slugRoute);
+app.use("/", redirectRoute);
+
 
 
 await connectDB();
