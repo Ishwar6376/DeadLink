@@ -16,7 +16,7 @@ import dashboard from "./routes/dashboard/dashboard";
 import removePassRoute from "./routes/removePass";
 import deleteRoute from "./routes/delete";
 import updateRoute from "./routes/update";
-import localAnalyzer from "./routes/localAnalyzer";
+// import localAnalyzer from "./routes/localAnalyzer";
 
 import {
   clerkMiddleware,
@@ -63,7 +63,7 @@ app.use("/api/me", dashboard);
 app.use("/api/removePass", removePassRoute);
 app.use("/api/delete", deleteRoute);
 app.use("/api/update", updateRoute);
-app.use("/api/analyze", localAnalyzer);
+// app.use("/api/analyze", localAnalyzer);
 
 
 async function connectDB() {
