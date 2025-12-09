@@ -102,12 +102,12 @@ function computeHeuristicRisk(url: string, html: string) {
 
 export const analyzeWebsite = async (req: any, res: any) => {
   const {id}=req.body;
-  const response= await Url.findOne({url_id:id});
-  if(!response){
+  const urlDoc = await Url.findOne({ url_id: id });
+  if (!urlDoc) {
     return res.status(400).json({ error: "Not A Valid Link" });
   }
-  
-  const url=response?.url;
+
+  const url = urlDoc?.url;
   if (!url) return res.status(400).json({ error: "URL is required" });
 
   console.log(`Analyzing: ${url}`);
@@ -127,22 +127,20 @@ export const analyzeWebsite = async (req: any, res: any) => {
 
     const heuristicScore = computeHeuristicRisk(url, html);
 
-    const finalScore = Math.round(
-      aiSafety.safety_score * 0.7 + heuristicScore * 0.3
-    );
+    const finalScore = Math.round(aiSafety.safety_score * 0.7 + heuristicScore * 0.3);
 
-    const response = {
+    const result = {
       url,
       summary,
       safety_ai: aiSafety,
       heuristics: {
-        heuristic_score: heuristicScore
+        heuristic_score: heuristicScore,
       },
       final_safety_score: finalScore,
-      raw_preview: cleanText.slice(0, 400)
+      raw_preview: cleanText.slice(0, 400),
     };
 
-    res.json(response);
+    res.json(result);
   } catch (err: any) {
     console.error(err);
     res.status(500).json({ error: err.message || "Internal server error" });

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 export default function RedirectPage() {
-  const { id } = useParams();
+  const location = useLocation();
+  // take the entire pathname (without leading slash) as the id
+  const id = location.pathname.replace(/^\//, "");
 
   const [error, setError] = useState("");
   const [url, setUrl] = useState("");

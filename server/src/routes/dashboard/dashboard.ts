@@ -24,7 +24,6 @@ router.get("/", async (req, res) => {
     }
 
     const urls = await Url.find({ user: dbUser._id });
-    console.log(urls);
     return res.status(200).json({ urls });
 
   } catch (err) {

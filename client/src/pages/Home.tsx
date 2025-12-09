@@ -134,9 +134,10 @@ export default function Home() {
     setShortButton("Shorting");
     try {
       const endpoint = features.custom ? "/api/slug" : "/api/short";
-      const response = await axios.post(endpoint, { url });
+      const response = await axios.post(endpoint, { url,slug});
       
       const shortUrl = response.data.shortUrl;
+      console.log("Short URL:", shortUrl);
       setShortUrl(shortUrl);
       console.log("Short URL:", shortUrl);
     } catch (err: any) {

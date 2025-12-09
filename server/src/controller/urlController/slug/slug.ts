@@ -1,5 +1,6 @@
-import { Url } from './../../../model/urlModel';
+import { Url } from "../../../model/urlModel";
 import { Request, Response } from "express";
+import { nanoid } from "nanoid";
 
 export const createCustomSlug = async (req: Request, res: Response) => {
   try {
@@ -13,35 +14,48 @@ export const createCustomSlug = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Slug is required" });
     }
 
-    // 1) validate slug
-    const slugRegex = /^[a-zA-Z0-9_-]{3,30}$/;
+    // validate slug
+    const slugRegex = /^[a-zA-Z0-9-_]{3,30}$/;
     if (!slugRegex.test(slug)) {
       return res.status(400).json({
-        message:
-          "Invalid slug. Use 3–30 characters (letters, numbers, - or _)",
+        message: "Invalid slug. Use 3-30 characters (letters, numbers, - or _)",
       });
     }
-    // 3) build short URL from env or fallback
-    const domain = process.env.DOMAIN || "http://localhost:5173";
-    const shortUrl = `${domain}/${slug}`;
 
-    // 4) save in DB
+    let id = nanoid(6);
+    let slugPath = `${slug}/${id}`;
+
+    let existing = await Url.findOne({ shortUrl: slugPath });
+
+    while (existing) {
+      id = nanoid(6);
+      slugPath = `${slug}/${id}`;
+      existing = await Url.findOne({ shortUrl: slugPath });
+    }
+
+    // Build final short URL (for frontend only)
+    const domain = process.env.DOMAIN || "http://localhost:5173";
+    const fullUrl = `${domain}/${slugPath}`;
+
     const doc = await Url.create({
-      url_id: slug,
       url,
-      shortUrl,
+      url_id: id,
+      shortUrl: slugPath,      
+      isSlug: true, 
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+    await doc.save();
 
-    // 5) send response
     return res.status(201).json({
-      message: "Custom slug created",
-      shortUrl: doc.shortUrl,
-      url_id: doc.url_id,
+      message: "Custom unique URL created",
+      shortUrl: fullUrl,        
+      slugPath: slugPath,       
+      id,
     });
+
   } catch (err) {
-    console.error("Slug controller error:", err);
-    return res.status(500).json({ message: "Internal server error" });
+    console.log(err);
+    return res.status(500).json({ message: "Server error" });
   }
 };

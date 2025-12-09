@@ -2,13 +2,17 @@ import qrcode from "qrcode";
 import { Url } from "../../../model/urlModel";
 
 export default async function qrGenerator(url: string) {
-  // Check if document already exists
-  const existing = await Url.findOne({ originalUrl: url });
-  // If exists and already has QR, return it
-  if (existing?.qr) return existing.qr;
+  // Try to find document by shortUrl first, then by original url field
+  const doc = (await Url.findOne({ shortUrl: url })) || (await Url.findOne({ url }));
 
-  // Generate QR
-  const qr = await qrcode.toDataURL(url, {
+  // If a QR already exists for this document, return it
+  if (doc && doc.qr) return doc.qr;
+
+  // Determine the value to encode in the QR (prefer shortUrl if available)
+  const toEncode = doc?.shortUrl ?? url;
+
+  // Generate QR Data URL
+  const qr = await qrcode.toDataURL(toEncode, {
     margin: 1,
     width: 400,
     color: {
@@ -17,11 +21,10 @@ export default async function qrGenerator(url: string) {
     },
   });
 
-  // Update based on the URL (NOT QR)
-  const res=await Url.findOne({shortUrl:url})
-  if(res){
-    res.qr=qr
-    await res.save()
+  // Persist QR on the document if we found one
+  if (doc) {
+    doc.qr = qr;
+    await doc.save();
   }
 
   return qr;

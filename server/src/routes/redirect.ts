@@ -8,7 +8,18 @@ router.post("/", async (req, res) => {
     const { id, password } = req.body;
     console.log(password,id)
 
-    const doc = await Url.findOne({ url_id: id });
+    if (!id) return res.status(400).json({ status: "bad_request", message: "Missing id" });
+
+    const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const segments = String(id).split("/").filter(Boolean);
+    const lastSeg = segments.length ? segments[segments.length - 1] : id;
+
+    const regex = new RegExp(escapeRegex(String(lastSeg)) + "$", "i");
+
+    const doc = await Url.findOne({
+      $or: [{ url_id: id }, { shortUrl: id }, { url_id: lastSeg }, { shortUrl: { $regex: regex } }],
+    });
+
     if (!doc) {
       return res.status(404).json({ status: "not_found", message: "Invalid link" });
     }
@@ -34,8 +45,7 @@ router.post("/", async (req, res) => {
       ? doc.url
       : `https://${doc.url}`;
 
-    // const response=analyzeWebsite(req,res);
-    // console.log(response);
+      
     return res.status(200).json({
       status: "safe",
       url: normalizedUrl,

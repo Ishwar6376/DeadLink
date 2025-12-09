@@ -9,9 +9,14 @@ import quick from "./routes/quick";
 import oneTime from "./routes/oneTime";
 import redirect from "./routes/redirect"
 import test from "./test/test"
+import slug from "./routes/slugRoute"
 import saveUser from "./routes/saveUser"
 
-import dashboard from "./routes/dashboard/dashboard"
+import dashboard from "./routes/dashboard/dashboard";
+import removePassRoute from "./routes/removePass";
+import deleteRoute from "./routes/delete";
+import updateRoute from "./routes/update";
+import localAnalyzer from "./routes/localAnalyzer";
 
 import {
   clerkMiddleware,
@@ -37,7 +42,7 @@ app.use(
 app.use(clerkMiddleware());
 
 app.get("/", (req, res) => {
-  res.json({ message: "Server is runnig good" });
+  res.json({ message: "Server is running good" });
 });
 
 app.use("/api/short", useRoute);
@@ -49,12 +54,16 @@ app.use("/api/saveUser", saveUser)
 app.use("/api/quick", quick);
 app.use("/api/pass", passRoute);
 app.use("/api/oneTime", oneTime);
-
+app.use("/api/slug", slug)
 
 app.use("/api/test",test)
 
 
-app.use("/api/me",dashboard);
+app.use("/api/me", dashboard);
+app.use("/api/removePass", removePassRoute);
+app.use("/api/delete", deleteRoute);
+app.use("/api/update", updateRoute);
+app.use("/api/analyze", localAnalyzer);
 
 
 async function connectDB() {

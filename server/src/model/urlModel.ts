@@ -47,6 +47,11 @@ const urlSchema = new Schema({
     ref: "User",
     default: null,
   },
+  isSlug: {
+    type: Boolean,
+    default: false,
+  }
+  
 });
 
 export const Url = model("Url", urlSchema);
