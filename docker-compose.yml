@@ -1,20 +1,25 @@
 services:
   server:
     build: ./server
+    container_name: deadlink-server
     ports:
       - "3000:3000"
     volumes:
       - ./server:/src
       - /src/node_modules
+    env_file:
+      - ./server/.env      
     command: npm run dev
     environment:
       - CHOKIDAR_USEPOLLING=true
 
-
   client:
     build: ./client
+    container_name: deadlink-client
     ports:
       - "5173:5173"
+    env_file:
+      - ./client/.env       
     command: npm run dev -- --host
     environment:
       - CHOKIDAR_USEPOLLING=true
@@ -27,3 +32,4 @@ services:
             - node_modules/
         - action: rebuild
           path: ./client/package.json
+

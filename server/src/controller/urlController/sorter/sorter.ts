@@ -1,24 +1,39 @@
 import { nanoid } from "nanoid";
 import { Url } from "../../../model/urlModel";
 import { Request, Response } from "express";
+import { getAuth } from "@clerk/express";
+import { User } from "../../../model/userModel";
 
 export default async function sorter(req: Request, res: Response) {
   try {
     const { url } = req.body;
-
+    const { userId } = getAuth(req);
+    console.log(userId);
     if (!url) {
-      return res.status(400).json({ error: "Original URL is required" });
+      return res.status(400).json({ error: "URL is required" });
     }
 
+    const user =  await User.findOne({ userId:userId });
+    console.log("Db user",user);
     let id = nanoid(8);
-    let existing = await Url.findOne({ url_id: id });
+    while (await Url.findOne({ url_id: id })) id = nanoid(8);
 
-    while (existing) {
-      id = nanoid(8);
-      existing = await Url.findOne({ url_id: id });
+    const shortUrl = `http://localhost:5173/${id}`;
+
+    if (user) {      
+      await user.save();
+
+      const newUrl = new Url({
+        url_id: id,
+        url,
+        shortUrl,
+        clicks: 0,
+        user:  user._id
+      });
+
+      await newUrl.save();
+      return res.status(200).json({ shortUrl, id });
     }
-
-    const shortUrl = `http://short.ly/${id}`;
 
     const newUrl = new Url({
       url_id: id,
@@ -26,13 +41,10 @@ export default async function sorter(req: Request, res: Response) {
       shortUrl,
       clicks: 0,
     });
-
+    
     await newUrl.save();
 
-    return res.status(200).json({
-      shortUrl,
-      id,
-    });
+    return res.status(200).json({ shortUrl, id });
 
   } catch (err) {
     console.error(err);

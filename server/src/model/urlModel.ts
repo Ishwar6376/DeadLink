@@ -1,56 +1,57 @@
 import { Schema, model } from "mongoose";
-import { User } from "./userModel";
-
 
 const urlSchema = new Schema({
-    url_id: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    url: {
-        type: String,
-        required: true,
-    },
-    shortUrl: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password: {
-        type: String,
-    },
-    expiry: {
-        type: Date,
-        default:null
-    },
-    clicks: {
-        type: Number,
-        default: 0,
-    },
-    isSingleValid: {
-        type: Boolean,
-        default: false
-    },
-    linkCntLimit: {
-        type: Number,
-        default: null
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
-    isvarified: {
-        type: Boolean,
-        default: false
-    },
-    qr:{
-        type: String
-    },
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: User,
-    }
+  url_id: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  url: {
+    type: String,
+    required: true,
+  },
+  shortUrl: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: String,
+  expiry: {
+    type: Date,
+    default: null,
+  },
+  clicks: {
+    type: Number,
+    default: 0,
+  },
+  isSingleValid: {
+    type: Boolean,
+    default: false,
+  },
+  linkCntLimit: {
+    type: Number,
+    default: null,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  isvarified: {
+    type: Boolean,
+    default: false,
+  },
+  qr: String,
+
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
+  isSlug: {
+    type: Boolean,
+    default: false,
+  }
+  
 });
 
 export const Url = model("Url", urlSchema);
