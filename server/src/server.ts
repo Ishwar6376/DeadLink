@@ -22,6 +22,12 @@ import { clerkMiddleware } from "@clerk/express";
 const app = express();
 
 app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.json({ message: "Server is running good" });
+});
+
+
 app.use(
   cors({
     origin: [
@@ -29,17 +35,14 @@ app.use(
       "http://127.0.0.1:5173",
       "http://client:5173",
       "https://shortly-eight-lilac.vercel.app",
+      "https://deadlink-production.up.railway.app"
     ],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "Clerk-Signature"],
   })
 );
 
 
 app.use(clerkMiddleware())
-app.get("/", (req, res) => {
-  res.json({ message: "Server is running good" });
-});
 
 app.use("/api/short", useRoute);
 app.use("/api/qr", qrRoute);
