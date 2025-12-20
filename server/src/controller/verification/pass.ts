@@ -1,4 +1,4 @@
-import { Url } from "../../model/urlModel";
+import { Url } from "../../model/urlModel.js";
 
 export default async function verifyPass(req: any, res: any) {
   const { id, pass } = req.body;

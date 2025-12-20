@@ -1,4 +1,4 @@
-import { Url } from "../model/urlModel";
+import { Url } from "../model/urlModel.js";
 import Router from "express";
 
 const router=Router();

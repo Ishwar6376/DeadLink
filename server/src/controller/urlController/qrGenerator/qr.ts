@@ -1,5 +1,5 @@
 import qrcode from "qrcode";
-import { Url } from "../../../model/urlModel";
+import { Url } from "../../../model/urlModel.js";
 
 export default async function qrGenerator(url: string) {
   // Try to find document by shortUrl first, then by original url field

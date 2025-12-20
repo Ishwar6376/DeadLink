@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
-import { Url } from "../../../model/urlModel";
+import { Url } from "../../../model/urlModel.js";
 import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
-import { User } from "../../../model/userModel";
+import { User } from "../../../model/userModel.js";
 
 export default async function sorter(req: Request, res: Response) {
   try {

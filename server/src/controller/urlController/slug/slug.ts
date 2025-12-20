@@ -1,4 +1,4 @@
-import { Url } from "../../../model/urlModel";
+import { Url } from "../../../model/urlModel.js";
 import { Request, Response } from "express";
 import { nanoid } from "nanoid";
 

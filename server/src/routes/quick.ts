@@ -1,5 +1,5 @@
 import { Router } from "express";
-import custom from "../controller/urlController/quick/quick";
+import custom from "../controller/urlController/quick/quick.js";
 
 const router = Router();
 

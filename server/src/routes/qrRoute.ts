@@ -1,5 +1,5 @@
 import {Router } from "express"
-import qrGenerator from "../controller/urlController/qrGenerator/qr";
+import qrGenerator from "../controller/urlController/qrGenerator/qr.js";
 const router = Router();
 
 router.post("/", async (req, res) => {

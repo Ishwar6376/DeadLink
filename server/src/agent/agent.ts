@@ -2,7 +2,7 @@ import axios from "axios";
 import { AxiosResponse } from 'axios';
 import { JSDOM } from "jsdom";
 import puppeteer from "puppeteer";
-import { Url } from "../model/urlModel";
+import { Url } from "../model/urlModel.js";
 
 // -------------------------------------------------------------
 // CONSTANTS

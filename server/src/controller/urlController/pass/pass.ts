@@ -1,4 +1,4 @@
-import { Url } from "../../../model/urlModel"
+import { Url } from "../../../model/urlModel.js"
 
 export default async function Pass(url:string,pass:string) {
     const res=await Url.findOne({shortUrl:url})

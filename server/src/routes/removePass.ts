@@ -1,5 +1,5 @@
 import { Router } from "express";
-import removePassFn from "./dashboard/removepass";
+import removePassFn from "./dashboard/removepass.js";
 
 const router = Router();
 

@@ -1,4 +1,4 @@
-import { Url } from "../../../model/urlModel";
+import { Url } from "../../../model/urlModel.js";
 
 export default async function custom(url: string, expiry: Date) {
     console.log("Inside the custom function");

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { analyzeWebsite } from "../agent/agent";
+import { analyzeWebsite } from "../agent/agent.js";
 
 const router = Router();
 router.post("/", async (req, res) => {
