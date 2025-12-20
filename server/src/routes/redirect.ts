@@ -44,8 +44,6 @@ router.post("/", async (req, res) => {
     const normalizedUrl = /^https?:\/\//i.test(doc.url)
       ? doc.url
       : `https://${doc.url}`;
-
-      
     return res.status(200).json({
       status: "safe",
       url: normalizedUrl,

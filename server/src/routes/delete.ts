@@ -9,7 +9,7 @@ router.delete("/:id", async (req, res) => {
     const { id } = req.params;
     const doc = await Url.findById(id);
     if (!doc) return res.status(404).json({ error: "Not found" });
-    await doc.remove();
+    await doc.deleteOne();
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("Delete error:", err);

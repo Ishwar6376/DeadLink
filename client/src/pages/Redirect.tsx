@@ -4,47 +4,69 @@ import axios from "axios";
 
 export default function RedirectPage() {
   const location = useLocation();
-  // take the entire pathname (without leading slash) as the id
   const id = location.pathname.replace(/^\//, "");
 
   const [error, setError] = useState("");
   const [url, setUrl] = useState("");
-  const [status, setStatus] = useState("");
-  const [password, setPassword] = useState("");
+
+  const [status, setStatus] = useState("");       
   const [loading, setLoading] = useState(true);
-  const [safety, setSafety] = useState<any>(null);
+
+  const [password, setPassword] = useState("");
+
+  const [summary, setSummary] = useState("");     
+  const [safety, setSafety] = useState<any>(null); 
+  const [analyzing, setAnalyzing] = useState(false);
+
 
   function normalizeUrl(u: string) {
     if (!u) return u;
-
-    if (u.startsWith("http://") || u.startsWith("https://")) {
-      return u;
-    }
+    if (u.startsWith("http://") || u.startsWith("https://")) return u;
     return "https://" + u;
   }
 
-async function fetchRedirect(pass?: string) {
-  try {
-    const res = await axios.post("/api/redirect", { id, password: pass });
+  
+  async function analyzeWeb() {
+    try {
+      setAnalyzing(true);
 
-    setStatus(res.data.status);
-    setUrl(normalizeUrl(res.data.url));
-    setSafety(res.data.safety || null);
-    setLoading(false);
+      const res = await axios.post("/api/analyze", { id:id });
+      console.log(res);
+      setSummary(res.data.summary || "No summary available");
+      setSafety(res.data.safety || null);
 
-  } catch (err: any) {
-    const data = err.response?.data;
-    setStatus(data?.status);   
-    setError(data?.message);  
-    setLoading(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAnalyzing(false);
+    }
   }
-}
+
+  async function fetchRedirect(pass?: string) {
+    try {
+      const res = await axios.post("/api/redirect", { id:id, password: pass });
+
+      setStatus(res.data.status);
+      setUrl(normalizeUrl(res.data.url));
+
+      setLoading(false);
+
+    } catch (err: any) {
+      const data = err.response?.data;
+      setStatus(data?.status);
+      setError(data?.message);
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    console.log("Status",status)
     fetchRedirect();
   }, [id]);
 
+
   if (loading) return <LoaderUI />;
+  if(error) return <ErrorUI msg={error} />
+
   if (status === "expired") return <ErrorUI msg="This link has expired." />;
   if (status === "used") return <ErrorUI msg="This link has already been used." />;
 
@@ -59,11 +81,16 @@ async function fetchRedirect(pass?: string) {
     );
   }
 
-  if (status === "warning") return <WarningUI url={url} safety={safety} />;
-
-  if (status === "safe") return <RedirectingUI url={url} />;
-
-  return <ErrorUI msg={error || "Unknown error"} />;
+  // After redirect → show analyze button
+  return (
+    <AnalyzePageUI
+      url={url}
+      summary={summary}
+      safety={safety}
+      analyzeWeb={analyzeWeb}
+      analyzing={analyzing}
+    />
+  );
 }
 
 
@@ -72,23 +99,14 @@ function LoaderUI() {
     <div className="h-screen flex items-center justify-center text-white">
       <div className="text-center">
         <div className="w-12 h-12 border-4 border-white/30 border-t-blue-400 rounded-full animate-spin mx-auto"></div>
-        <p className="text-slate-400 mt-3">Checking link security…</p>
+        <p className="text-slate-400 mt-3">Redirecting…</p>
       </div>
     </div>
   );
 }
 
-function PasswordUI({
-  password,
-  setPassword,
-  fetchRedirect,
-  status
-}: {
-  password: string;
-  setPassword: any;
-  fetchRedirect: any;
-  status: string;
-}) {
+
+function PasswordUI({ password, setPassword, fetchRedirect, status }: any) {
   const [showPass, setShowPass] = useState(false);
 
   return (
@@ -112,8 +130,7 @@ function PasswordUI({
           />
           <button
             onClick={() => setShowPass(!showPass)}
-            className="absolute right-3 top-3 text-slate-300 hover:text-white bg-amber-600 hover:cursor-pointer"
-            type="button"
+            className="absolute right-3 top-3 text-slate-300 hover:text-white"
           >
             {showPass ? "Hide" : "Show"}
           </button>
@@ -121,65 +138,65 @@ function PasswordUI({
 
         <button
           onClick={() => fetchRedirect(password)}
-          className="w-full p-3 rounded-lg bg-purple-600 hover:bg-purple-700 hover:cursor-pointer"
+          className="w-full p-3 rounded-lg bg-purple-600 hover:bg-purple-700"
         >
-          Unlock Link 
+          Unlock Link
         </button>
       </div>
     </div>
   );
 }
+function AnalyzePageUI({ url, summary, safety, analyzing, analyzeWeb }: any) {
+  const hasAnalysis = summary || safety;
 
-
-function WarningUI({ url, safety }: { url: string; safety: any }) {
   return (
-    <div className="h-screen flex items-center justify-center text-white bg-slate-900 px-6">
-      <div className="bg-red-600/10 border border-red-500 p-8 rounded-xl max-w-lg w-full text-center">
-        <ul className="text-left text-red-300 mb-4">
-          {safety?.safety_ai?.reasons?.map((r: string) => (
-            <li key={r}>• {r}</li>
-          ))}
-        </ul>
+    <div className="min-h-screen flex items-center justify-center text-white bg-slate-900 px-6 py-10">
+      <div className="max-w-2xl w-full space-y-6 bg-slate-800/40 p-8 rounded-xl border border-slate-700">
+
+        <h2 className="text-2xl font-bold text-blue-400 text-center">
+          Link Ready — Analyze Before Visiting
+        </h2>
+
+        {/* Analyze button */}
+        <button
+          onClick={analyzeWeb}
+          disabled={analyzing}
+          className="w-full p-3 rounded-xl bg-blue-600 hover:bg-blue-700 transition"
+        >
+          {analyzing ? "Analyzing…" : "Analyze Website"}
+        </button>
+
+        {hasAnalysis && (
+          <>
+            <div className="bg-slate-700/50 p-4 rounded-lg">
+              <h3 className="font-semibold text-yellow-300 mb-2">Summary</h3>
+              <p className="text-slate-200 whitespace-pre-line">{summary}</p>
+            </div>
+
+            {safety?.safety_ai?.reasons?.length > 0 && (
+              <div className="bg-red-600/10 p-4 border border-red-500 rounded-lg">
+                <h3 className="text-red-400 font-bold mb-2">Warning</h3>
+                <ul className="text-red-300 text-left">
+                  {safety.safety_ai.reasons.map((r: string) => (
+                    <li key={r}>• {r}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
+        )}
 
         <a
           href={url}
-          className="px-5 py-3 bg-red-500 rounded-lg font-bold hover:bg-red-600 transition"
+          className="w-full block text-center mt-4 p-3 rounded-xl bg-green-600 hover:bg-green-700 transition font-bold"
         >
-          Continue Anyway →
+          Continue →
         </a>
       </div>
     </div>
   );
 }
 
-function RedirectingUI({ url }: { url: string }) {
-  return (
-    <div className="h-screen flex items-center justify-center text-white bg-slate-900">
-      <div className="text-center bg-slate-800/60 border border-slate-700 p-8 rounded-xl shadow-xl">
-        <h2 className="text-3xl font-bold mb-4 bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-          Link Verified ✓
-        </h2>
-
-        <p className="text-slate-400 mb-6">
-          This link is safe. Click below to continue:
-        </p>
-
-        <button
-          onClick={() => (window.location.href = url)}
-          className="px-6 py-3 text-lg font-semibold rounded-xl 
-                     bg-linear-to-r from-blue-600 to-purple-600 
-                     hover:scale-105 transition inline-block hover:cursor-pointer"
-        >
-          Continue →
-        </button>
-
-        <p className="mt-4 text-xs text-slate-500">
-          You will not be auto-redirected for safety reasons.
-        </p>
-      </div>
-    </div>
-  );
-}
 
 function ErrorUI({ msg }: { msg: string }) {
   return (
