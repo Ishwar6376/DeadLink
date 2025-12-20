@@ -1,8 +1,19 @@
+FROM node:22-bullseye AS builder
+
+WORKDIR /src
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+
 FROM node:22-bullseye
 
 WORKDIR /src
 
-# Install system dependencies required by Puppeteer
+# Puppeteer deps (keep this)
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     fonts-liberation \
@@ -39,11 +50,10 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
-RUN npm install
-
-COPY . .
+COPY --from=builder /src/package*.json ./
+COPY --from=builder /src/node_modules ./node_modules
+COPY --from=builder /src/dist ./dist
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
