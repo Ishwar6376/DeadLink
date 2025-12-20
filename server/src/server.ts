@@ -42,7 +42,6 @@ app.use(
 );
 
 
-app.use(clerkMiddleware())
 
 app.use("/api/short", useRoute);
 app.use("/api/qr", qrRoute);
@@ -64,6 +63,7 @@ app.use("/api/delete", deleteRoute);
 app.use("/api/update", updateRoute);
 app.use("/api/analyze", localAnalyzer);
 
+app.use(clerkMiddleware())
 
 async function connectDB() {
   try {
