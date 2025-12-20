@@ -28,6 +28,7 @@ app.use(
       "http://localhost:5173",
       "http://127.0.0.1:5173",
       "http://client:5173",
+      "https://shortly-eight-lilac.vercel.app",
     ],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "Clerk-Signature"],
