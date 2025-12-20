@@ -8,6 +8,7 @@ export default async function sorter(req: Request, res: Response) {
   try {
     const { url } = req.body;
     const { userId } = getAuth(req);
+    console.log(url,userId)
     console.log(userId);
     if (!url) {
       return res.status(400).json({ error: "URL is required" });
