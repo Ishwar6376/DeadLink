@@ -17,6 +17,7 @@ import removePassRoute from "./routes/removePass";
 import deleteRoute from "./routes/delete";
 import updateRoute from "./routes/update";
 import localAnalyzer from "./routes/localAnalyzer";
+import { clerkMiddleware } from "@clerk/express";
 
 const app = express();
 
@@ -34,7 +35,7 @@ app.use(
 );
 
 
-
+app.use(clerkMiddleware())
 app.get("/", (req, res) => {
   res.json({ message: "Server is running good" });
 });
