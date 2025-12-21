@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { getAuth } from "@clerk/express";
-import { Url } from "../../model/urlModel";
-import { User } from "../../model/userModel";
+import { Url } from "../../model/urlModel.js";
+import { User } from "../../model/userModel.js";
 
 const router = Router();
 

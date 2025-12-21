@@ -1,6 +1,5 @@
 import {Router} from "express"
-import { Url } from "../model/urlModel";
-import Pass from "../controller/urlController/pass/pass"
+import Pass from "../controller/urlController/pass/pass.js"
 const router=Router();
 
 router.post("/",async(req,res)=>{

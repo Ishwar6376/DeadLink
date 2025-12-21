@@ -1,4 +1,4 @@
-import { Url } from "../../model/urlModel";
+import { Url } from "../../model/urlModel.js";
 
 export default async function verifyQuick(req: any, res: any) {
   const { id } = req.body;

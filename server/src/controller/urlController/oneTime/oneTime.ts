@@ -1,5 +1,5 @@
 import { json } from "body-parser";
-import { Url } from "../../../model/urlModel";
+import { Url } from "../../../model/urlModel.js";
 export default async function oneTime(url: string) {
     const res = await Url.findOne({ shortUrl: url });
     if(res){

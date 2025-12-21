@@ -2,48 +2,46 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 
-import passRoute from "./routes/passRoute";
-import useRoute from "./routes/short";
-import qrRoute from "./routes/qrRoute";
-import quick from "./routes/quick";
-import oneTime from "./routes/oneTime";
-import redirect from "./routes/redirect"
-import test from "./test/test"
-import slug from "./routes/slugRoute"
-import saveUser from "./routes/saveUser"
+import useRoute from "./routes/short.js";
+import qrRoute from "./routes/qrRoute.js";
+import passRoute from "./routes/passRoute.js";
+import quick from "./routes/quick.js";
+import oneTime from "./routes/oneTime.js";
+import redirect from "./routes/redirect.js"
+import test from "./test/test.js"
+import slug from "./routes/slugRoute.js"
+import saveUser from "./routes/saveUser.js"
 
-import dashboard from "./routes/dashboard/dashboard";
-import removePassRoute from "./routes/removePass";
-import deleteRoute from "./routes/delete";
-import updateRoute from "./routes/update";
-import localAnalyzer from "./routes/localAnalyzer";
-
-import {
-  clerkMiddleware,
-  requireAuth,
-  getAuth,
-} from "@clerk/express";
+import dashboard from "./routes/dashboard/dashboard.js";
+import removePassRoute from "./routes/removePass.js";
+import deleteRoute from "./routes/delete.js";
+import updateRoute from "./routes/update.js";
+import localAnalyzer from "./routes/localAnalyzer.js";
+import { clerkMiddleware } from "@clerk/express";
 
 const app = express();
 
 app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.json({ message: "Server is running good" });
+});
+
+
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
       "http://127.0.0.1:5173",
       "http://client:5173",
+      "https://shortly-eight-lilac.vercel.app",
+      "https://deadlink-production.up.railway.app"
     ],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "Clerk-Signature"],
   })
 );
 
-app.use(clerkMiddleware());
 
-app.get("/", (req, res) => {
-  res.json({ message: "Server is running good" });
-});
 
 app.use("/api/short", useRoute);
 app.use("/api/qr", qrRoute);
@@ -65,6 +63,7 @@ app.use("/api/delete", deleteRoute);
 app.use("/api/update", updateRoute);
 app.use("/api/analyze", localAnalyzer);
 
+app.use(clerkMiddleware())
 
 async function connectDB() {
   try {

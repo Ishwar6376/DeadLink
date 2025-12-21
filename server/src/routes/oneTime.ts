@@ -1,5 +1,5 @@
 import Router from "express";
-import oneTime from "../controller/urlController/oneTime/oneTime";
+import oneTime from "../controller/urlController/oneTime/oneTime.js";
 
 const router = Router();
 

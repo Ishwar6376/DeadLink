@@ -1,5 +1,5 @@
 import {Router} from "express";
-import sorter from "../controller/urlController/sorter/sorter";
+import sorter from "../controller/urlController/sorter/sorter.js";
 
 const router = Router();
 
