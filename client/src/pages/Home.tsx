@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useApi } from "../hooks/useApi";
+import { publicApi } from "../hooks/useApi";
 
 interface Features {
   qr: boolean;
@@ -134,7 +135,7 @@ export default function Home() {
     setShortButton("Shorting");
     try {
       const endpoint = features.custom ? "/api/slug" : "/api/short";
-      const response = await api.post(endpoint, { url,slug});
+      const response = await publicApi.post(endpoint, { url,slug});
       
       const shortUrl = response.data.shortUrl;
       console.log("Short URL:", shortUrl);

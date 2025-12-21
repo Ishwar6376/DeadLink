@@ -41,13 +41,13 @@ app.use(
   })
 );
 
-app.use(clerkMiddleware())
 
 app.use("/api/short", useRoute);
 app.use("/api/qr", qrRoute);
 app.use("/api/redirect", redirect)
 app.use("/api/saveUser", saveUser)
 
+app.use(clerkMiddleware())
 
 app.use("/api/quick", quick);
 app.use("/api/pass", passRoute);

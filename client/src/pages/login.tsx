@@ -6,7 +6,7 @@ import {
 import { useUser } from "@clerk/clerk-react";
 import Home from "./Home";
 import { useEffect } from "react";
-import { useApi } from "../hooks/useApi";
+import { publicApi } from "../hooks/useApi";
 
 interface UserData {
   name: string;
@@ -17,10 +17,9 @@ interface UserData {
 export default function Auth() {
   const { user, isLoaded, isSignedIn } = useUser();
 
-  const api=useApi();
   const saveUser = async (userData: UserData) => {
     console.log("userData",userData);
-    const res=await api.post("/api/saveUser", userData);
+    const res=await publicApi.post("/api/saveUser", userData);
     console.log(res);
   };
 

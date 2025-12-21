@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { SignedIn, SignedOut, RedirectToSignIn, useUser } from "@clerk/clerk-react";
-import {useApi} from "../hooks/useApi"
+
+import {useApi} from "../hooks/useApi";
+import { publicApi } from "../hooks/useApi";
 import {
   Link2,
   Shield,
@@ -45,6 +47,7 @@ type EditForm = {
 export default function Dashboard(){
   const { user } = useUser();
   const api=useApi();
+  
   const [urls, setUrls] = useState<Url[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [copyState, setCopyState] = useState<string | null>(null);
@@ -74,7 +77,7 @@ export default function Dashboard(){
 
   const generateQrFor = async (link: Url) => {
     try {
-      const res = await api.post("/api/qr", { url: link.shortUrl });
+      const res = await publicApi.post("/api/qr", { url: link.shortUrl });
       const qr = res.data.qr;
       setUrls((prev) => prev.map((u) => (u._id === link._id ? { ...u, qr } : u)));
     } catch (err) {
