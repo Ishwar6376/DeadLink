@@ -19,7 +19,7 @@ export default async function sorter(req: Request, res: Response) {
     let id = nanoid(8);
     while (await Url.findOne({ url_id: id })) id = nanoid(8);
 
-    const shortUrl = `http://localhost:5173/${id}`;
+    const shortUrl = `https://dead-link-zeta.vercel.app/${id}`;
 
     if (user) {      
       await user.save();
