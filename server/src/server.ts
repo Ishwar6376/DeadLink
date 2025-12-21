@@ -31,8 +31,8 @@ app.get("/", (req, res) => {
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
       "http://127.0.0.1:5173",
+      "http://localhost:5173",
       "http://client:5173",
       "https://shortly-eight-lilac.vercel.app",
       "https://deadlink-production.up.railway.app"
@@ -48,6 +48,7 @@ app.use("/api/qr", qrRoute);
 app.use("/api/redirect", redirect)
 app.use("/api/saveUser", saveUser)
 
+app.use(clerkMiddleware())
 
 app.use("/api/quick", quick);
 app.use("/api/pass", passRoute);
@@ -63,7 +64,6 @@ app.use("/api/delete", deleteRoute);
 app.use("/api/update", updateRoute);
 app.use("/api/analyze", localAnalyzer);
 
-app.use(clerkMiddleware())
 
 async function connectDB() {
   try {

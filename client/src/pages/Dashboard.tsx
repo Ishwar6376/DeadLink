@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { SignedIn, SignedOut, RedirectToSignIn, useUser } from "@clerk/clerk-react";
-import axios from "axios";
+import {useApi} from "../hooks/useApi"
 import {
   Link2,
   Shield,
@@ -44,7 +44,7 @@ type EditForm = {
 
 export default function Dashboard(){
   const { user } = useUser();
-
+  const api=useApi();
   const [urls, setUrls] = useState<Url[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [copyState, setCopyState] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export default function Dashboard(){
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/me");
+      const res = await api.get("/api/me");
       setUrls(res.data.urls || []);
     } catch (err) {
       console.error("Failed to load URLs", err);
@@ -74,7 +74,7 @@ export default function Dashboard(){
 
   const generateQrFor = async (link: Url) => {
     try {
-      const res = await axios.post("/api/qr", { url: link.shortUrl });
+      const res = await api.post("/api/qr", { url: link.shortUrl });
       const qr = res.data.qr;
       setUrls((prev) => prev.map((u) => (u._id === link._id ? { ...u, qr } : u)));
     } catch (err) {
@@ -83,8 +83,9 @@ export default function Dashboard(){
   };
 
   const removePassword = async (link: Url) => {
+    const api=useApi();
     try {
-      await axios.post("/api/removePass", { shortUrl: link.shortUrl });
+      await api.post("/api/removePass", { shortUrl: link.shortUrl });
       setUrls((prev) => prev.map((u) => (u._id === link._id ? { ...u, password: null } : u)));
     } catch (err) {
       console.error("Failed to remove password", err);
@@ -102,8 +103,9 @@ export default function Dashboard(){
   };
 
   const deleteUrl = async (id: string) => {
+    const api=useApi();
     try {
-      await axios.delete(`/api/delete/${id}`);
+      await api.delete(`/api/delete/${id}`);
       setUrls((prev) => prev.filter((u) => u._id !== id));
     } catch (err) {
       console.error("Failed to delete URL", err);
@@ -583,8 +585,9 @@ function EditModal({ link, close, update, reload, addLink }: { link: Url; close:
         linkCntLimit: form.clicksLimit || null,
         isPublic: form.isPublic,
       };
+      const api=useApi();
 
-      const res = await axios.post(`/api/update/${link._id}`, payload);
+      const res = await api.post(`/api/update/${link._id}`, payload);
       const updated: Url = res.data.updated ?? res.data ?? { ...link, ...payload };
       update(updated);
       close();
@@ -597,6 +600,7 @@ function EditModal({ link, close, update, reload, addLink }: { link: Url; close:
   };
 
   const createCustomSlug = async () => {
+    const api=useApi();
     setSlugError(null);
     if (!customSlug || customSlug.length < 3) {
       setSlugError("Slug must be at least 3 characters");
@@ -604,7 +608,7 @@ function EditModal({ link, close, update, reload, addLink }: { link: Url; close:
     }
     setSlugLoading(true);
     try {
-      const res = await axios.post(`/api/slug`, { url: form.url, slug: customSlug });
+      const res = await api.post(`/api/slug`, { url: form.url, slug: customSlug });
       const created: Url | undefined = res.data?.created;
       // If parent passed addLink, insert directly; otherwise fall back to reload
       if (created && addLink) {

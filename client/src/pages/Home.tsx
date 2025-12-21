@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useEffect } from "react";
-import axios from "axios";
 import { useUser } from "@clerk/clerk-react";
 
 import {
@@ -19,6 +18,7 @@ import {
   
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
+import { useApi } from "../hooks/useApi";
 
 interface Features {
   qr: boolean;
@@ -42,7 +42,7 @@ export default function Home() {
   const {  isSignedIn } = useUser();
 
   const isLoggedIn = isSignedIn;
-
+  const api=useApi();
   const [features, setFeatures] = useState<Features>({
     qr: false,
     quick: false,
@@ -134,7 +134,7 @@ export default function Home() {
     setShortButton("Shorting");
     try {
       const endpoint = features.custom ? "/api/slug" : "/api/short";
-      const response = await axios.post(endpoint, { url,slug});
+      const response = await api.post(endpoint, { url,slug});
       
       const shortUrl = response.data.shortUrl;
       console.log("Short URL:", shortUrl);
@@ -164,7 +164,7 @@ export default function Home() {
       if (features.qr) {
         {
           try {
-            const response = await axios.post("/api/qr", { url: shortUrl });
+            const response = await api.post("/api/qr", { url: shortUrl });
             if (!cancelled) setQr(response.data.qr);
           } catch (err) {
             if (!cancelled) {
@@ -181,7 +181,7 @@ export default function Home() {
         } else {
           try {
             const expiryDate = new Date(Date.now() + day * 86400000);
-            await axios.post("/api/quick", {
+            await api.post("/api/quick", {
               url: shortUrl,
               expiry: expiryDate,
             });
@@ -199,7 +199,7 @@ export default function Home() {
           setError("Login required for Password Protection");
         } else {
           try {
-            await axios.post("/api/pass", { url: shortUrl, pass: password });
+            await api.post("/api/pass", { url: shortUrl, pass: password });
           } catch (err) {
             if (!cancelled) {
               console.error(err);
@@ -214,7 +214,7 @@ export default function Home() {
           setError("Login required for One Time");
         } else {
           try {
-            await axios.post("/api/oneTime", { url: shortUrl });
+            await api.post("/api/oneTime", { url: shortUrl });
           } catch (err) {
             if (!cancelled) {
               console.error(err);

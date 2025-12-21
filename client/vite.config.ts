@@ -6,13 +6,5 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
-  base:"/",
-  server: {
-  proxy: {
-    "/api": {
-      target: "https://deadlink.onrender.com",
-      changeOrigin: true,
-    },
-  },
-}
+  base:"/"
 })

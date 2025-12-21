@@ -1,23 +1,24 @@
+import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 
 export const useApi = () => {
   const { getToken } = useAuth();
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  const callProtected = async (path: string) => {
-    const token = await getToken(); // Clerk session token
+  const api = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
+  });
+  // Add token before every request
+  api.interceptors.request.use(async (config) => {
+    const token = await getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
 
-    const res = await fetch(`${baseUrl}${path}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-    });
-
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    return res.json();
-  };
-
-  return { callProtected };
+  return api;
 };
+
+export const publicApi = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+});

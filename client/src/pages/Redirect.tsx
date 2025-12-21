@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
+import { publicApi } from "../hooks/useApi";
 
 export default function RedirectPage() {
   const location = useLocation();
@@ -30,7 +30,7 @@ export default function RedirectPage() {
     try {
       setAnalyzing(true);
 
-      const res = await axios.post("/api/analyze", { id:id });
+      const res = await publicApi.post("/api/analyze", { id:id });
       console.log(res);
       setSummary(res.data.summary || "No summary available");
       setSafety(res.data.safety || null);
@@ -44,19 +44,26 @@ export default function RedirectPage() {
 
   async function fetchRedirect(pass?: string) {
     try {
-      const res = await axios.post("/api/redirect", { id:id, password: pass });
-
+      const res = await publicApi.post("/api/redirect", { id:id, password: pass });
+      console.log(res.data);
       setStatus(res.data.status);
       setUrl(normalizeUrl(res.data.url));
-
       setLoading(false);
 
     } catch (err: any) {
-      const data = err.response?.data;
-      setStatus(data?.status);
-      setError(data?.message);
-      setLoading(false);
-    }
+  const data = err.response?.data;
+
+  setStatus(data?.status);
+
+  if (
+    data?.status !== "password_required" &&
+    data?.status !== "wrong_password"
+  ) {
+    setError(data?.message || "Something went wrong");
+  }
+
+  setLoading(false);
+}
   }
 
   useEffect(() => {

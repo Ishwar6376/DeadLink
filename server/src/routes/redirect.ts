@@ -1,9 +1,10 @@
 import { Url } from "../model/urlModel.js";
-import Router from "express";
+import {Router} from "express";
 
 const router=Router();
 router.post("/", async (req, res) => {
   try {
+
     console.log("Backed hit")
     const { id, password } = req.body;
     console.log(password,id)
