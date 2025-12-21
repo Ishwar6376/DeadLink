@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
   proxy: {
     "/api": {
-      target: "http://deadlink-production.up.railway.app",
+      target: "https://deadlink.onrender.com",
       changeOrigin: true,
     },
   },
