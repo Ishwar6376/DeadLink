@@ -35,7 +35,8 @@ app.use(
       "http://localhost:5173",
       "http://client:5173",
       "https://shortly-eight-lilac.vercel.app",
-      "https://deadlink-production.up.railway.app"
+      "https://deadlink-production.up.railway.app",
+      "https://deadlink.onrender.com"
     ],
     credentials: true,
   })
