@@ -28,20 +28,18 @@ app.get("/", (req, res) => {
 });
 
 
+
 app.use(
   cors({
     origin: [
-      "http://127.0.0.1:5173",
       "http://localhost:5173",
-      "http://client:5173",
-      "https://shortly-eight-lilac.vercel.app",
-      "https://deadlink-production.up.railway.app",
-      "https://deadlink.onrender.com"
+      "https://your-vercel-domain.vercel.app", // add later
     ],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 );
-
 
 
 app.use("/api/short", useRoute);
