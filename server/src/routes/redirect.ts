@@ -1,10 +1,10 @@
 import { Url } from "../model/urlModel.js";
 import {Router} from "express";
+import {getShortUrl,setShortUrl} from "../cache/url.cache.js"
 
 const router=Router();
 router.post("/", async (req, res) => {
   try {
-
     console.log("Backed hit")
     const { id, password } = req.body;
     console.log(password,id)
@@ -16,7 +16,10 @@ router.post("/", async (req, res) => {
     const lastSeg = segments.length ? segments[segments.length - 1] : id;
 
     const regex = new RegExp(escapeRegex(String(lastSeg)) + "$", "i");
-
+    const cached=await getShortUrl(id);
+    console.log(cached);
+    if(cached) return res.redirect(cached.data);
+    
     const doc = await Url.findOne({
       $or: [{ url_id: id }, { shortUrl: id }, { url_id: lastSeg }, { shortUrl: { $regex: regex } }],
     });
@@ -45,6 +48,9 @@ router.post("/", async (req, res) => {
     const normalizedUrl = /^https?:\/\//i.test(doc.url)
       ? doc.url
       : `https://${doc.url}`;
+    
+
+    await setShortUrl(id,normalizedUrl,doc.expiry.getTime()-Date.now());
     return res.status(200).json({
       status: "safe",
       url: normalizedUrl,

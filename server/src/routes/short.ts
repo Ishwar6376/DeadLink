@@ -1,8 +1,8 @@
 import {Router} from "express";
-import sorter from "../controller/urlController/sorter/sorter.js";
+import shorter from "../controller/urlController/sorter/sorter.js";
 
 const router = Router();
 
-router.post("/", sorter);
+router.post("/", shorter);
 
 export default router;

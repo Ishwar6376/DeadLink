@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
 import { User } from "../../../model/userModel.js";
 
-export default async function sorter(req: Request, res: Response) {
+export default async function shorter(req: Request, res: Response) {
   try {
     const { url } = req.body;
     const { userId } = getAuth(req);

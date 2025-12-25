@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { publicApi } from "../hooks/useApi";
 
+
 export default function RedirectPage() {
   const location = useLocation();
   const id = location.pathname.replace(/^\//, "");
@@ -44,6 +45,7 @@ export default function RedirectPage() {
 
   async function fetchRedirect(pass?: string) {
     try {
+
       const res = await publicApi.post("/api/redirect", { id:id, password: pass });
       console.log(res.data);
       setStatus(res.data.status);
