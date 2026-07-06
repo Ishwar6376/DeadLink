@@ -1,9 +1,8 @@
 import { Router } from "express";
 import { Url } from "../model/urlModel.js";
+import bcrypt from "bcryptjs";
 
 const router = Router();
-
-// POST /api/update/:id
 router.post("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -12,11 +11,15 @@ router.post("/:id", async (req, res) => {
     const doc = await Url.findById(id);
     if (!doc) return res.status(404).json({ error: "Not found" });
 
-    // Update allowed fields
     if (typeof payload.url === "string") doc.url = payload.url;
-    if (payload.password === null) doc.password = null;
-    else if (typeof payload.password === "string") doc.password = payload.password;
-    if (payload.expiry) doc.expiry = new Date(payload.expiry);
+    if (payload.password === null) {
+      doc.password = null;
+    } else if (typeof payload.password === "string") {
+      const salt = await bcrypt.genSalt(10);
+      doc.password = await bcrypt.hash(payload.password, salt);
+    }
+    if (payload.expiry === null || payload.expiry === "") doc.expiry = null as any;
+    else if (payload.expiry) doc.expiry = new Date(payload.expiry);
     if (typeof payload.isSingleValid === "boolean") doc.isSingleValid = payload.isSingleValid;
     if (payload.linkCntLimit !== undefined) doc.linkCntLimit = payload.linkCntLimit;
     if (payload.isPublic !== undefined) (doc as any).isPublic = payload.isPublic;

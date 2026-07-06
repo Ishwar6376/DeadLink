@@ -1,4 +1,4 @@
-import { nanoid } from "nanoid";
+import { idGenerator } from "../../../utils/idGenerator.js";
 import { Url } from "../../../model/urlModel.js";
 import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
@@ -16,10 +16,10 @@ export default async function shorter(req: Request, res: Response) {
 
     const user =  await User.findOne({ userId:userId });
     console.log("Db user",user);
-    let id = nanoid(8);
-    while (await Url.findOne({ url_id: id })) id = nanoid(8);
+    let id = await idGenerator.getNextId();
 
-    const shortUrl = `https://dead-link-zeta.vercel.app/${id}`;
+    const domain = process.env.DOMAIN || "http://localhost:5173";
+    const shortUrl = `${domain}/${id}`;
 
     if (user) {      
       await user.save();

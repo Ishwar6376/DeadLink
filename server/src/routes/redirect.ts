@@ -1,6 +1,8 @@
 import { Url } from "../model/urlModel.js";
 import {Router} from "express";
-import {getShortUrl,setShortUrl} from "../cache/url.cache.js"
+import {getShortUrl,setShortUrl} from "../cache/url.cache.js";
+import bcrypt from "bcryptjs";
+import { kafkaClient } from "../utils/kafka.js";
 
 const router=Router();
 router.post("/", async (req, res) => {
@@ -17,8 +19,14 @@ router.post("/", async (req, res) => {
 
     const regex = new RegExp(escapeRegex(String(lastSeg)) + "$", "i");
     const cached=await getShortUrl(id);
-    console.log(cached);
-    if(cached) return res.redirect(cached.data);
+    console.log("cached",cached);
+    if (cached) {
+      await kafkaClient.sendClickEvent(id);
+      return res.status(200).json({
+        status: "safe",
+        url: cached,
+      });
+    }
     
     const doc = await Url.findOne({
       $or: [{ url_id: id }, { shortUrl: id }, { url_id: lastSeg }, { shortUrl: { $regex: regex } }],
@@ -36,21 +44,39 @@ router.post("/", async (req, res) => {
       return res.status(409).json({ status: "used", message: "This one-time link has already been used." });
     }
 
-    if (doc.password && !password) {
-      return res.status(405).json({ status: "password_required",message:"Password is needed" });
-    }
+    if (doc.password) {
+      if (!password) {
+        return res.status(405).json({ status: "password_required",message:"Password is needed" });
+      }
+      let isMatch = false;
+      if (doc.password.startsWith("$2")) {
+        isMatch = await bcrypt.compare(password, doc.password);
+      } else {
+        isMatch = password === doc.password;
+        if (isMatch) {
+            const salt = await bcrypt.genSalt(10);
+            doc.password = await bcrypt.hash(password, salt);
+        }
+      }
 
-    if (doc.password && password !== doc.password) {
-      return res.status(403).json({ status: "wrong_password" });
+      if (!isMatch) {
+        return res.status(403).json({ status: "wrong_password" });
+      }
     }
-    doc.clicks += 1;
-    await doc.save();
+    // Asynchronously send click event to Kafka instead of blocking DB write
+    await kafkaClient.sendClickEvent(doc.url_id);
     const normalizedUrl = /^https?:\/\//i.test(doc.url)
       ? doc.url
       : `https://${doc.url}`;
     
 
-    await setShortUrl(id,normalizedUrl,doc.expiry.getTime()-Date.now());
+    const ttlSeconds = doc.expiry 
+      ? Math.max(1, Math.floor((doc.expiry.getTime() - Date.now()) / 1000)) 
+      : 86400; // default 24h cache if no expiry
+
+    if (!doc.password && !doc.isSingleValid) {
+      await setShortUrl(id, normalizedUrl, ttlSeconds);
+    }
     return res.status(200).json({
       status: "safe",
       url: normalizedUrl,

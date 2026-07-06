@@ -15,11 +15,13 @@ import {
   Check,
   ChevronUp,
   ChevronDown,
+  EyeOff,
   
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useApi } from "../hooks/useApi";
 import { publicApi } from "../hooks/useApi";
+import { ExpiryInput } from "../components/ExpiryInput";
 
 interface Features {
   qr: boolean;
@@ -38,7 +40,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
-  const [day, setDay] = useState(1);
+  const [expiryDuration, setExpiryDuration] = useState({
+    days: 1,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "unavailable" | "invalid">("idle");
+  const [showPassword, setShowPassword] = useState(false);
   const [shortButton, setShortButton] = useState("Short");
   const {  isSignedIn } = useUser();
 
@@ -63,34 +72,64 @@ export default function Home() {
 
       switch (e.key) {
         case "ArrowUp":
-          setDay((d) => Math.min(d + 1, 30));
+          setExpiryDuration(prev => ({ ...prev, days: Math.min(prev.days + 1, 30) }));
           break;
         case "ArrowDown":
-          setDay((d) => Math.max(d - 1, 1));
+          setExpiryDuration(prev => ({ ...prev, days: Math.max(prev.days - 1, 0) }));
           break;
         case "PageUp":
-          setDay((d) => Math.min(d + 5, 30));
+          setExpiryDuration(prev => ({ ...prev, days: Math.min(prev.days + 5, 30) }));
           break;
         case "PageDown":
-          setDay((d) => Math.max(d - 5, 1));
+          setExpiryDuration(prev => ({ ...prev, days: Math.max(prev.days - 5, 0) }));
           break;
         case "1":
-          setDay(1);
+          setExpiryDuration(prev => ({ ...prev, days: 1 }));
           break;
         case "3":
-          setDay(3);
+          setExpiryDuration(prev => ({ ...prev, days: 3 }));
           break;
         case "5":
-          setDay(5);
+          setExpiryDuration(prev => ({ ...prev, days: 5 }));
           break;
         case "7":
-          setDay(7);
+          setExpiryDuration(prev => ({ ...prev, days: 7 }));
           break;
       }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [features.quick]);
+
+  useEffect(() => {
+    if (!features.custom) return;
+    if (!slug) {
+      setSlugStatus("idle");
+      return;
+    }
+    const slugRegex = /^[a-zA-Z0-9-_]{3,30}$/;
+    if (!slugRegex.test(slug)) {
+      setSlugStatus("invalid");
+      return;
+    }
+    
+    const checkSlug = async () => {
+      setSlugStatus("checking");
+      try {
+        const res = await publicApi.get(`/api/slug/check?slug=${slug}`);
+        if (res.data.available) {
+          setSlugStatus("available");
+        } else {
+          setSlugStatus("unavailable");
+        }
+      } catch (err) {
+        setSlugStatus("unavailable");
+      }
+    };
+
+    const timer = setTimeout(checkSlug, 500);
+    return () => clearTimeout(timer);
+  }, [slug, features.custom]);
 
   const linearColor: Record<keyof Features, string> = {
     qr: "from-cyan-500/80 to-blue-500/80",
@@ -132,10 +171,15 @@ export default function Home() {
       setError("Please enter a valid URL");
       return;
     }
+    if (features.custom && slugStatus !== "available") {
+      setError("Please enter a valid and available custom slug");
+      return;
+    }
     setShortButton("Shorting");
     try {
       const endpoint = features.custom ? "/api/slug" : "/api/short";
-      const response = await publicApi.post(endpoint, { url,slug});
+      const apiClient = isLoggedIn ? api : publicApi;
+      const response = await apiClient.post(endpoint, { url,slug});
       
       const shortUrl = response.data.shortUrl;
       console.log("Short URL:", shortUrl);
@@ -181,10 +225,9 @@ export default function Home() {
           setError("Login required for Quick Expire");
         } else {
           try {
-            const expiryDate = new Date(Date.now() + day * 86400000);
             await api.post("/api/quick", {
               url: shortUrl,
-              expiry: expiryDate,
+              duration: expiryDuration,
             });
           } catch (err) {
             if (!cancelled) {
@@ -245,8 +288,8 @@ export default function Home() {
     (features.quick || features.password || features.oneTime) && !isLoggedIn;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
-      <div className="max-w-5xl mx-auto px-6 py-16 md:py-24">
+    <div className="flex-1 overflow-y-auto custom-scrollbar bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
+      <div className="max-w-4xl mx-auto w-full px-6 py-8 md:py-12 my-auto">
         {/* <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-4">
             <span className="bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -321,25 +364,46 @@ export default function Home() {
               {features.password && (
                 <div className="relative group">
                   <div className="absolute inset-0 bg-linear-to-r from-violet-500/20 to-purple-500/20 rounded-xl blur-lg opacity-50"></div>
-                  <input
-                    type="password"
-                    value={password}
-                    placeholder="Enter protection password"
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="relative w-full px-6 py-3 rounded-xl bg-slate-800/50 border border-violet-500/30 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      placeholder="Enter protection password"
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-6 py-3 rounded-xl bg-slate-800/50 border border-violet-500/30 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all pr-12"
+                    />
+                    <button 
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-violet-400 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5"/> : <Eye className="w-5 h-5"/>}
+                    </button>
+                  </div>
                 </div>
               )}
               {features.custom && (    // handling custom slug
                 <div className="relative group">
                   <div className="absolute inset-0 bg-linear-to-r from-pink-500/20 to-rose-500/20 rounded-xl blur-lg opacity-50"></div>
-                  <input
-                    type="text"
-                    value={slug}
-                    placeholder="Enter custom slug (e.g. my-link)"
-                    onChange={(e) => setSlug(e.target.value)}
-                    className="relative w-full px-6 py-3 rounded-xl bg-slate-800/50 border border-pink-500/30 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={slug}
+                      placeholder="Enter custom slug (e.g. my-link)"
+                      onChange={(e) => setSlug(e.target.value)}
+                      className={`relative w-full px-6 py-3 rounded-xl bg-slate-800/50 border text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all ${
+                        slugStatus === "available" ? "border-green-500/50" :
+                        slugStatus === "unavailable" ? "border-red-500/50" :
+                        slugStatus === "invalid" ? "border-amber-500/50" :
+                        "border-pink-500/30"
+                      }`}
+                    />
+                    <div className="absolute right-4 flex items-center">
+                      {slugStatus === "checking" && <div className="w-4 h-4 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>}
+                      {slugStatus === "available" && <CheckCircle className="w-5 h-5 text-green-400" />}
+                      {slugStatus === "unavailable" && <span className="text-xs text-red-400 font-bold bg-red-400/10 px-2 py-1 rounded-md">Taken</span>}
+                      {slugStatus === "invalid" && <span className="text-xs text-amber-400 font-bold bg-amber-400/10 px-2 py-1 rounded-md">Invalid</span>}
+                    </div>
+                  </div>
                 </div>
               )}
               {features.quick && !isLoggedIn && (
@@ -363,9 +427,9 @@ export default function Home() {
                       {[1, 3, 5, 7].map((d) => (
                         <button
                           key={d}
-                          onClick={() => setDay(d)}
+                          onClick={() => setExpiryDuration({ days: d, hours: 0, minutes: 0, seconds: 0 })}
                           className={`py-3 rounded-lg font-semibold transition-all duration-200
-                            ${day === d
+                            ${expiryDuration.days === d && expiryDuration.hours === 0 && expiryDuration.minutes === 0 && expiryDuration.seconds === 0
                               ? "bg-linear-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/40 scale-105"
                               : "bg-slate-800/50 text-slate-400 hover:bg-slate-700 border border-slate-700"
                             }
@@ -376,73 +440,18 @@ export default function Home() {
                       ))}
                     </div>
 
-                    {/* Samsung-style picker */}
-                    <div className="relative">
+                    <div className="relative mt-6">
                       <div className="absolute inset-0 bg-linear-to-r from-amber-500/30 to-orange-500/30 rounded-3xl blur-xl opacity-40"></div>
-
-                      <div className="relative bg-linear-to-br from-slate-900/80 to-slate-800/80 backdrop-blur border border-amber-500/30 rounded-3xl p-8">
-                        <div className="flex flex-col items-center gap-4">
-                          {/* Up */}
-                          <button
-                            onClick={() =>
-                              setDay((prev) => Math.min(prev + 1, 30))
-                            }
-                            className="p-3 hover:bg-slate-700/50 rounded-xl transition-colors active:scale-95"
-                          >
-                            <ChevronUp className="w-8 h-8 text-amber-400" />
-                          </button>
-
-                          {/* Display */}
-                          <div className="relative">
-                            <div className="absolute inset-0 bg-linear-to-r from-amber-500/40 to-orange-500/40 rounded-3xl blur-lg"></div>
-                            <div className="relative bg-slate-800/60 border-2 border-amber-500/50 rounded-3xl px-12 py-6 flex items-center justify-center min-w-48">
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                value={day}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/\D/g, "");
-
-                                  // Allow empty while typing
-                                  if (val === "") {
-                                    setDay(0);
-                                    return;
-                                  }
-
-                                  setDay(Number(val));
-                                }}
-                                onBlur={() => {
-                                  if (day < 1) setDay(1);
-                                  if (day > 365) setDay(365);
-                                  if (day > 365) setDay(365);
-                                }}
-                                placeholder="Days"
-                                className="w-32 text-center text-6xl font-black text-amber-400 bg-transparent outline-none"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Down */}
-                          <button
-                            onClick={() =>
-                              setDay((prev) => Math.max(prev - 1, 1))
-                            }
-                            className="p-3 hover:bg-slate-700/50 rounded-xl transition-colors active:scale-95"
-                          >
-                            <ChevronDown className="w-8 h-8 text-amber-400" />
-                          </button>
-
-                          <p className="text-sm text-slate-400 font-semibold uppercase tracking-widest">
-                            Days
-                          </p>
-                        </div>
+                      <div className="relative bg-linear-to-br from-slate-900/80 to-slate-800/80 backdrop-blur border border-amber-500/30 rounded-3xl p-6 sm:p-8">
+                        <ExpiryInput value={expiryDuration} onChange={setExpiryDuration} />
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-400">
-                      Expires after{" "}
-                      <span className="text-amber-400 font-bold">{day}</span>{" "}
-                      day{day > 1 && "s"}
+                    <p className="text-xs text-slate-400 text-center">
+                      Link expires in{" "}
+                      <span className="text-amber-400 font-bold">
+                        {expiryDuration.days}d {expiryDuration.hours}h {expiryDuration.minutes}m {expiryDuration.seconds}s
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -539,11 +548,11 @@ export default function Home() {
                         QR Code
                       </p>
                     </div>
-                    <div className="p-4 bg-white rounded-xl shadow-lg">
+                    <div className="p-3 bg-white rounded-xl shadow-lg">
                       <img
                         src={qr}
                         alt="QR Code"
-                        className="w-48 h-48 object-contain"
+                        className="w-32 h-32 object-contain"
                       />
                     </div>
 

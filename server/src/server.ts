@@ -38,6 +38,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "http://127.0.0.1:5000",
+      "http://localhost:8080",
       "https://dead-link-zeta.vercel.app",
     ],
     credentials: true,
@@ -74,13 +76,32 @@ async function connectDB() {
     const mongoose = await import("mongoose");
     await mongoose.connect(process.env.MONGODB_URL!);
     console.log("Connected to MongoDB");
+
+    const { redis } = await import("./utils/redis.js");
+    const connected = await redis.connect();
+    if (connected) {
+        console.log("Connected to Redis");
+    } else {
+        console.log("Using in-memory RAM cache fallback");
+    }
+
+    const { Url } = await import("./model/urlModel.js");
+    const { slugBloomFilter } = await import("./utils/bloomFilter.js");
+    const urls = await Url.find({ isSlug: true }).select('shortUrl');
+    urls.forEach(u => {
+        if (u.shortUrl) {
+            slugBloomFilter.add(u.shortUrl);
+        }
+    });
+    console.log(`Initialized Bloom Filter with ${urls.length} custom slugs.`);
+
+    const { kafkaClient } = await import("./utils/kafka.js");
+    await kafkaClient.connect();
   } catch (err) {
-    console.error("DB error:", err);
+    console.error("DB/Redis connection error:", err);
   }
 }
-const HOST = process.env.NODE_ENV === "production"
-  ? "0.0.0.0"
-  : "127.0.0.1";
+const HOST = "0.0.0.0";
 
 const PORT = process.env.PORT || 5000;
 

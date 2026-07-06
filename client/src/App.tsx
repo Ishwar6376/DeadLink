@@ -8,16 +8,18 @@ import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
-    <div className="min-h-screen w-full overflow-y-auto">
+    <div className="h-screen w-full overflow-hidden flex flex-col">
       <BrowserRouter>
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/analytics" element={<Dashboard />} />
-          <Route path="/login" element={<Auth />} />
-          {/* catch-all for any short link or slug paths (e.g. /abc123 or /custom/abc) */}
-          <Route path="/*" element={<RedirectPage />} />
-        </Routes>
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/analytics" element={<Dashboard />} />
+            <Route path="/login" element={<Auth />} />
+            {/* catch-all for any short link or slug paths (e.g. /abc123 or /custom/abc) */}
+            <Route path="/*" element={<RedirectPage />} />
+          </Routes>
+        </main>
       </BrowserRouter>
     </div>
   );

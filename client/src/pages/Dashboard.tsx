@@ -15,6 +15,8 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 
@@ -86,7 +88,6 @@ export default function Dashboard(){
   };
 
   const removePassword = async (link: Url) => {
-    const api=useApi();
     try {
       await api.post("/api/removePass", { shortUrl: link.shortUrl });
       setUrls((prev) => prev.map((u) => (u._id === link._id ? { ...u, password: null } : u)));
@@ -106,7 +107,6 @@ export default function Dashboard(){
   };
 
   const deleteUrl = async (id: string) => {
-    const api=useApi();
     try {
       await api.delete(`/api/delete/${id}`);
       setUrls((prev) => prev.filter((u) => u._id !== id));
@@ -144,18 +144,18 @@ export default function Dashboard(){
   return (
     <>
       <SignedIn>
-        <div className="min-h-screen bg-[radial-linear(ellipse_at_top_left,var(--tw-linear-stops))] from-slate-900/60 via-slate-950 to-slate-900 text-white">
+        <div className="flex-1 bg-[radial-linear(ellipse_at_top_left,var(--tw-linear-stops))] from-slate-900/60 via-slate-950 to-slate-900 text-white flex flex-col min-h-0 overflow-hidden">
           {/* subtle background blur layers */}
           <div className="fixed inset-0 pointer-events-none -z-10">
             <div className="absolute -left-48 -top-40 w-152 h-52 rounded-full bg-linear-to-br from-indigo-600/12 to-sky-500/6 blur-3xl" />
             <div className="absolute -right-48 -bottom-40 w-3xl h-192 rounded-full bg-linear-to-tr from-purple-600/10 to-pink-500/6 blur-3xl" />
           </div>
 
-          <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="max-w-6xl w-full mx-auto px-6 py-6 flex-1 flex flex-col min-h-0">
             <Header user={user} loading={loading} reload={loadData} />
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="backdrop-blur-sm bg-white/3 border border-white/6 rounded-2xl p-5 shadow-glass">
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0 overflow-hidden">
+              <div className="lg:col-span-2 flex flex-col gap-6 min-h-0 overflow-hidden">
+                <div className="backdrop-blur-sm bg-white/3 border border-white/6 rounded-2xl p-5 shadow-glass shrink-0">
                   <SearchAndFilters
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
@@ -166,7 +166,7 @@ export default function Dashboard(){
                   />
                 </div>
 
-                <div>
+                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 min-h-0">
                   <UrlList
                     urls={sorted}
                     loading={loading}
@@ -180,7 +180,7 @@ export default function Dashboard(){
                 </div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-6 overflow-y-auto custom-scrollbar pr-2">
                 <div className="backdrop-blur-sm bg-white/3 border border-white/6 rounded-2xl p-5 shadow-glass">
                   <StatsBoard urls={urls} />
                 </div>
@@ -554,6 +554,7 @@ function Badge({ label, color }: { label: string; color: "purple" | "rose" | "gr
 /* ---------------- Edit Modal (Neo-Glass) ---------------- */
 
 function EditModal({ link, close, update, reload, addLink }: { link: Url; close: () => void; update: (u: Url) => void; reload?: () => Promise<void> | (() => void); addLink?: (n: Url) => void }) {
+  const api = useApi();
   const [form, setForm] = useState<EditForm>({
     url: link.url,
     password: link.password ? "yes" : "no",
@@ -569,6 +570,7 @@ function EditModal({ link, close, update, reload, addLink }: { link: Url; close:
   const [customSlug, setCustomSlug] = useState<string>("");
   const [slugLoading, setSlugLoading] = useState<boolean>(false);
   const [slugError, setSlugError] = useState<string | null>(null);
+  const [showPass, setShowPass] = useState<boolean>(false);
 
   const save = async () => {
     setError(null);
@@ -588,7 +590,6 @@ function EditModal({ link, close, update, reload, addLink }: { link: Url; close:
         linkCntLimit: form.clicksLimit || null,
         isPublic: form.isPublic,
       };
-      const api=useApi();
 
       const res = await api.post(`/api/update/${link._id}`, payload);
       const updated: Url = res.data.updated ?? res.data ?? { ...link, ...payload };
@@ -603,7 +604,6 @@ function EditModal({ link, close, update, reload, addLink }: { link: Url; close:
   };
 
   const createCustomSlug = async () => {
-    const api=useApi();
     setSlugError(null);
     if (!customSlug || customSlug.length < 3) {
       setSlugError("Slug must be at least 3 characters");
@@ -681,13 +681,21 @@ function EditModal({ link, close, update, reload, addLink }: { link: Url; close:
               {form.password === "yes" && (
                 <div>
                   <label className="text-sm text-slate-300">Set Password</label>
-                  <input
-                    type="text"
-                    value={form.passValue}
-                    onChange={(e) => setForm({ ...form, passValue: e.target.value })}
-                    className="mt-1 w-full p-3 rounded-lg bg-white/5 border border-white/6 text-white"
-                    placeholder="Enter a password to protect this link"
-                  />
+                  <div className="relative mt-1">
+                    <input
+                      type={showPass ? "text" : "password"}
+                      value={form.passValue}
+                      onChange={(e) => setForm({ ...form, passValue: e.target.value })}
+                      className="w-full p-3 rounded-lg bg-white/5 border border-white/6 text-white pr-12"
+                      placeholder="Enter a password to protect this link"
+                    />
+                    <button 
+                      onClick={() => setShowPass(!showPass)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-400 transition-colors"
+                    >
+                      {showPass ? <EyeOff className="w-5 h-5"/> : <Eye className="w-5 h-5"/>}
+                    </button>
+                  </div>
                 </div>
               )}
 
